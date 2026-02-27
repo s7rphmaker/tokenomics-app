@@ -1,0 +1,2329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>CICADA Tokenomics Control Center</title>
+  <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand-electric: #235af0;
+      --brand-neon: #00b1ff;
+      --brand-black: #000000;
+      --brand-white: #ffffff;
+      --brand-ink: #081331;
+      --brand-ink-soft: #29457b;
+      --brand-muted: #6d82aa;
+      --bg: #edf4ff;
+      --surface: rgba(255, 255, 255, 0.94);
+      --surface2: rgba(255, 255, 255, 0.98);
+      --border: rgba(35, 90, 240, 0.2);
+      --border-strong: rgba(35, 90, 240, 0.38);
+      --accent: var(--brand-electric);
+      --accent2: var(--brand-neon);
+      --accent-green: var(--brand-neon);
+      --accent-red: #001348;
+      --accent-amber: var(--brand-electric);
+      --text: var(--brand-ink);
+      --text-primary: var(--brand-ink);
+      --text-secondary: var(--brand-ink-soft);
+      --text-muted: #4e6694;
+      --text-dim: var(--brand-muted);
+      --radius: 18px;
+      --shadow: 0 20px 56px rgba(7, 17, 52, 0.18);
+      --blur: blur(16px);
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: "Geologica", "SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 12% -8%, rgba(255, 255, 255, 0.28), transparent 34%),
+        radial-gradient(circle at 92% 102%, rgba(255, 255, 255, 0.2), transparent 32%),
+        linear-gradient(116deg, #235af0 0%, #2c74f4 52%, #00b1ff 100%);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      animation: fadeIn 0.45s ease;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      right: -200px;
+      top: 84px;
+      width: 680px;
+      height: 430px;
+      border: 76px solid rgba(255, 255, 255, 0.4);
+      border-left-width: 92px;
+      border-radius: 210px;
+      transform: skewX(-8deg);
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::after {
+      content: "";
+      position: fixed;
+      left: 42px;
+      bottom: 120px;
+      width: 1px;
+      height: 180px;
+      background: rgba(255, 255, 255, 0.45);
+      pointer-events: none;
+      z-index: 0;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      background: rgba(5, 19, 58, 0.64);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.26);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .app-header h1 {
+      font-size: 31px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--brand-white);
+      line-height: 1;
+      text-transform: lowercase;
+    }
+    .app-header .badge {
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.42);
+      color: var(--brand-white);
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .container {
+      max-width: 1420px;
+      margin: 0 auto;
+      padding: 28px 32px 80px;
+      position: relative;
+      z-index: 1;
+    }
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 22px;
+      background: rgba(5, 18, 55, 0.42);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      padding: 6px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.32);
+      width: fit-content;
+      box-shadow: 0 14px 35px rgba(2, 12, 42, 0.28);
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      border: none;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.78);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.2s ease;
+    }
+    .tab-btn:hover {
+      color: var(--brand-white);
+      background: rgba(255, 255, 255, 0.12);
+    }
+    .tab-btn.active {
+      background: var(--brand-white);
+      color: var(--brand-electric);
+      box-shadow: 0 8px 22px rgba(0, 18, 63, 0.25);
+    }
+    .tab-content {
+      display: none;
+      animation: riseIn 0.35s ease;
+    }
+    .tab-content.active { display: block; }
+    .card {
+      background: var(--surface);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+      animation: riseIn 0.4s ease;
+    }
+    .card h2 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card h2 .icon {
+      font-size: 17px;
+      color: var(--accent);
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+    }
+    .form-group input,
+    .form-group select,
+    .alloc-table tbody td input,
+    .alloc-table tbody td select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 13px;
+      transition: 0.2s ease;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .alloc-table tbody td input:focus,
+    .alloc-table tbody td select:focus {
+      outline: none;
+      border-color: var(--brand-electric);
+      box-shadow: 0 0 0 3px rgba(35, 90, 240, 0.17);
+      background: #ffffff;
+    }
+    .form-group input.error,
+    .alloc-table tbody td input.error {
+      border-color: var(--accent-red);
+      background: rgba(0, 19, 72, 0.05);
+    }
+    .alloc-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 13px;
+    }
+    .alloc-table thead th {
+      background: linear-gradient(180deg, rgba(235, 245, 255, 0.96), rgba(225, 236, 255, 0.95));
+      padding: 11px 12px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      border-bottom: 1px solid rgba(35, 90, 240, 0.22);
+    }
+    .alloc-table thead th:first-child { border-radius: 10px 0 0 0; }
+    .alloc-table thead th:last-child { border-radius: 0 10px 0 0; }
+    .alloc-table tbody td {
+      padding: 6px 8px;
+      border-bottom: 1px solid rgba(35, 90, 240, 0.1);
+      vertical-align: middle;
+    }
+    .alloc-table .remove-btn {
+      background: transparent;
+      border: none;
+      color: var(--accent-red);
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      transition: background 0.2s ease;
+    }
+    .alloc-table .remove-btn:hover {
+      background: rgba(0, 19, 72, 0.08);
+    }
+    .alloc-bar-container {
+      margin: 16px 0;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .alloc-bar-wrap {
+      flex: 1;
+      height: 9px;
+      background: rgba(35, 90, 240, 0.14);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .alloc-bar {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.3s, background 0.3s;
+    }
+    .alloc-bar.ok { background: linear-gradient(90deg, #00b1ff, #235af0); }
+    .alloc-bar.warn { background: linear-gradient(90deg, #235af0, #1a42b8); }
+    .alloc-bar.error { background: linear-gradient(90deg, #001348, #000000); }
+    .alloc-pct {
+      font-size: 14px;
+      font-weight: 700;
+      min-width: 84px;
+      text-align: right;
+    }
+    .alloc-pct.ok { color: var(--accent-green); }
+    .alloc-pct.warn { color: var(--accent-amber); }
+    .alloc-pct.error { color: var(--accent-red); }
+    .btn {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 11px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: linear-gradient(130deg, #235af0, #00b1ff);
+      color: var(--brand-white);
+      box-shadow: 0 12px 26px rgba(8, 30, 92, 0.27);
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      filter: saturate(1.06);
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: #ffffff;
+      border-color: var(--border-strong);
+    }
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    .results-table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.86);
+    }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .results-table thead th {
+      background: linear-gradient(180deg, rgba(235, 245, 255, 0.97), rgba(226, 238, 255, 0.96));
+      backdrop-filter: blur(8px);
+      padding: 10px 14px;
+      text-align: right;
+      font-weight: 700;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      border-bottom: 1px solid rgba(35, 90, 240, 0.2);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    .results-table thead th:first-child { text-align: left; }
+    .results-table tbody tr { transition: background 0.18s ease; }
+    .results-table tbody tr:hover { background: rgba(35, 90, 240, 0.08); }
+    .results-table tbody td {
+      padding: 8px 14px;
+      text-align: right;
+      border-bottom: 1px solid rgba(35, 90, 240, 0.09);
+      font-variant-numeric: tabular-nums;
+    }
+    .results-table tbody td:first-child {
+      text-align: left;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      animation: riseIn 0.35s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, #235af0, #00b1ff);
+    }
+    .kpi-card .kpi-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .kpi-card .kpi-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .kpi-card .kpi-value.green { color: var(--accent-green); }
+    .kpi-card .kpi-value.red { color: var(--accent-red); }
+    .kpi-card .kpi-value.amber { color: var(--accent-amber); }
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 20px;
+    }
+    .chart-card {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .chart-card.full-width { grid-column: 1 / -1; }
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 19, 58, 0.58);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .loading-overlay.active { display: flex; }
+    .spinner {
+      width: 46px;
+      height: 46px;
+      border: 3px solid rgba(255, 255, 255, 0.22);
+      border-top-color: var(--brand-neon);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text {
+      color: var(--brand-white);
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .error-msg {
+      background: rgba(0, 19, 72, 0.08);
+      border: 1px solid rgba(0, 19, 72, 0.24);
+      color: #001348;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-top: 12px;
+      display: none;
+    }
+    .error-msg.visible { display: block; }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 12px 0;
+    }
+    .toggle {
+      width: 46px;
+      height: 25px;
+      background: rgba(35, 90, 240, 0.16);
+      border: 1px solid rgba(35, 90, 240, 0.24);
+      border-radius: 999px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .toggle.on {
+      background: rgba(35, 90, 240, 0.92);
+      border-color: rgba(35, 90, 240, 0.92);
+    }
+    .toggle::after {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #ffffff;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.2s ease;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .toggle.on::after { transform: translateX(20px); }
+    .toggle-label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .preset-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .preset-btn {
+      padding: 7px 13px;
+      background: rgba(255, 255, 255, 0.84);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .preset-btn:hover {
+      border-color: var(--border-strong);
+      color: var(--text-primary);
+      background: #ffffff;
+    }
+    .sim-mode-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .sim-mode-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      position: relative;
+    }
+    .sim-mode-card:hover {
+      border-color: var(--border-strong);
+      transform: translateY(-1px);
+    }
+    .sim-mode-card.active {
+      border-color: var(--brand-electric);
+      background: var(--surface2);
+      box-shadow: var(--shadow);
+    }
+    .sim-mode-icon {
+      font-size: 18px;
+      margin-bottom: 6px;
+      color: var(--accent);
+    }
+    .sim-mode-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .sim-mode-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+    .sim-mode-tag {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(35, 90, 240, 0.12);
+      border: 1px solid rgba(35, 90, 240, 0.3);
+      color: var(--accent);
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .config-summary-bar {
+      display: flex;
+      gap: 16px;
+      padding: 12px 20px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      box-shadow: var(--shadow);
+    }
+    .config-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+    }
+    .config-tag-label {
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+    .config-tag-value {
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .config-tag-sep {
+      width: 1px;
+      height: 20px;
+      background: rgba(35, 90, 240, 0.18);
+    }
+    .metric-tip {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      margin-left: 6px;
+      cursor: help;
+    }
+    .metric-tip .tip-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(35, 90, 240, 0.09);
+      border: 1px solid rgba(35, 90, 240, 0.22);
+      color: var(--text-dim);
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .metric-tip:hover .tip-icon {
+      background: var(--brand-electric);
+      border-color: var(--brand-electric);
+      color: #fff;
+    }
+    .metric-tip .tip-body {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 290px;
+      background: rgba(255, 255, 255, 0.97);
+      border: 1px solid rgba(35, 90, 240, 0.2);
+      border-radius: 12px;
+      padding: 14px 16px;
+      z-index: 100;
+      box-shadow: 0 18px 34px rgba(6, 17, 53, 0.2);
+      pointer-events: none;
+      backdrop-filter: blur(10px);
+    }
+    .metric-tip:hover .tip-body { display: block; }
+    .metric-tip .tip-body::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: rgba(255, 255, 255, 0.97);
+    }
+    .metric-tip .tip-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+    .metric-tip .tip-text {
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      font-weight: 500;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    th .metric-tip .tip-body {
+      left: 0;
+      transform: none;
+    }
+    th .metric-tip .tip-body::after {
+      left: 12px;
+      transform: none;
+    }
+    th:last-child .metric-tip .tip-body,
+    th:nth-last-child(2) .metric-tip .tip-body {
+      left: auto;
+      right: 0;
+      transform: none;
+    }
+    th:last-child .metric-tip .tip-body::after,
+    th:nth-last-child(2) .metric-tip .tip-body::after {
+      left: auto;
+      right: 12px;
+      transform: none;
+    }
+    .bp-checks {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .bp-check-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+      font-size: 12px;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+    .bp-check-item:hover { background: rgba(35, 90, 240, 0.06); }
+    .bp-check-item input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      accent-color: var(--accent);
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .bp-check-label { flex: 1; line-height: 1.4; }
+    .bp-check-label em { color: var(--text-muted); font-style: normal; font-size: 11px; }
+    .bp-weight {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+      min-width: 32px;
+      text-align: right;
+      opacity: 0.7;
+    }
+    .bp-check-item:has(input:checked) {
+      background: rgba(35, 90, 240, 0.11);
+      color: var(--text-primary);
+    }
+    .bp-check-item:has(input:checked) .bp-weight { opacity: 1; }
+    @media (max-width: 900px) {
+      body::before { display: none; }
+      body::after { left: 18px; height: 120px; }
+      .container { padding: 16px; }
+      .app-header { padding: 14px 16px; }
+      .app-header h1 { font-size: 26px; }
+      .chart-grid { grid-template-columns: 1fr; }
+      .sim-mode-cards { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .metric-tip .tip-body { width: 220px; }
+      .tabs { width: 100%; }
+      .tab-btn { flex: 1; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <h1>cicada. tokenomics control center</h1>
+    <span class="badge">Brandbook Edition</span>
+  </div>
+  <button onclick="handleLogout()" title="Sign out"
+    style="background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.25);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;color:#ff4d6d;cursor:pointer;letter-spacing:0.03em;transition:background 0.15s;"
+    onmouseover="this.style.background='rgba(255,77,109,0.2)'"
+    onmouseout="this.style.background='rgba(255,77,109,0.1)'">
+    Sign Out
+  </button>
+</div>
+
+<div class="container">
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab(event, 'sell-pressure')">Sell Pressure Analysis</button>
+    <button class="tab-btn" onclick="switchTab(event, 'monte-carlo')">Monte Carlo Simulation</button>
+  </div>
+
+  <!-- ════════ TAB 1: Sell Pressure ════════ -->
+  <div id="tab-sell-pressure" class="tab-content active">
+    <div class="card">
+      <h2><span class="icon">&#9881;</span> Project Configuration</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Project Name</label>
+          <input type="text" id="sp-project-name" value="My Token Project"/>
+        </div>
+        <div class="form-group">
+          <label>Total Supply</label>
+          <input type="number" id="sp-total-supply" value="1000000000" min="1"/>
+        </div>
+        <div class="form-group">
+          <label>Listing Price (USD)</label>
+          <input type="number" id="sp-initial-price" value="0.03" min="0.000001" step="0.001"/>
+        </div>
+        <div class="form-group">
+          <label>Horizon (Months)</label>
+          <input type="number" id="sp-horizon" value="48" min="1" max="120"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">&#9638;</span> Token Allocations</h2>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
+        Define each token category with its allocation, vesting schedule, and expected sell pressure.
+        Total allocation must equal exactly 100%.
+      </p>
+
+      <div class="preset-row">
+        <span style="font-size:12px;color:var(--text-dim);margin-right:4px;">Presets:</span>
+        <button class="preset-btn" onclick="loadPreset('standard')">Standard ICO</button>
+        <button class="preset-btn" onclick="loadPreset('defi')">DeFi Protocol</button>
+        <button class="preset-btn" onclick="loadPreset('gaming')">GameFi</button>
+        <button class="preset-btn" onclick="loadPreset('clear')">Clear All</button>
+      </div>
+
+      <div class="results-table-wrap">
+        <table class="alloc-table" id="sp-alloc-table">
+          <thead>
+            <tr>
+              <th>Category Name</th>
+              <th>Holder Type <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">Holder Type</div><div class="tip-text">Behavior class for this allocation bucket. It drives sell speed and market sensitivity in Monte Carlo. This is now explicit and does not depend on category name.</div></span></span></th>
+              <th>Allocation %</th>
+              <th>TGE Unlock % <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">TGE Unlock</div><div class="tip-text">Percentage of this category's tokens that unlock immediately on launch day (Token Generation Event). 100% = all tokens available on day one. 0% = fully locked until cliff ends.</div></span></span></th>
+              <th>Cliff (months) <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">Cliff Period</div><div class="tip-text">Number of months after TGE before any vesting begins. During the cliff, no new tokens unlock (only TGE unlock is available). After cliff ends, linear vesting starts.</div></span></span></th>
+              <th>Vesting (months) <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">Vesting Period</div><div class="tip-text">Number of months over which remaining tokens unlock linearly after the cliff. Tokens unlock in equal monthly portions. Example: 12 months vesting = ~8.3% of remaining tokens unlock each month.</div></span></span></th>
+              <th>Sell Pressure % <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">Sell Pressure %</div><div class="tip-text">Estimated percentage of unlocked tokens that holders will eventually sell. 0% = no selling (e.g., liquidity pools). 85% = most tokens will be sold. Based on holder type and market conditions.</div></span></span></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="sp-alloc-body"></tbody>
+        </table>
+      </div>
+
+      <div class="alloc-bar-container">
+        <div class="alloc-bar-wrap">
+          <div class="alloc-bar ok" id="sp-alloc-bar" style="width:0%"></div>
+        </div>
+        <div class="alloc-pct ok" id="sp-alloc-pct">0.00%</div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="addAllocRow('sp')">+ Add Category</button>
+        <button class="btn btn-primary" id="sp-run-btn" onclick="runSellPressure()">
+          Run Sell Pressure Analysis
+        </button>
+      </div>
+      <div class="error-msg" id="sp-error"></div>
+    </div>
+
+    <!-- Results -->
+    <div id="sp-results" style="display:none;">
+      <div class="kpi-grid" id="sp-kpi-grid"></div>
+
+      <div class="card">
+        <h2>Sell Pressure Schedule</h2>
+        <div class="results-table-wrap" style="max-height:500px;overflow-y:auto;">
+          <table class="results-table" id="sp-results-table">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="chart-grid" id="sp-charts"></div>
+    </div>
+  </div>
+
+  <!-- ════════ TAB 2: Monte Carlo ════════ -->
+  <div id="tab-monte-carlo" class="tab-content">
+    <div class="card">
+      <h2><span class="icon">&#9881;</span> Simulation Configuration</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Project Name</label>
+          <input type="text" id="mc-project-name" value="My Token Project"/>
+        </div>
+        <div class="form-group">
+          <label>Total Supply</label>
+          <input type="number" id="mc-total-supply" value="1000000000" min="1"/>
+        </div>
+        <div class="form-group">
+          <label>Listing Price (USD)</label>
+          <input type="number" id="mc-initial-price" value="0.03" min="0.000001" step="0.001"/>
+        </div>
+        <div class="form-group">
+          <label>Horizon (Months)</label>
+          <input type="number" id="mc-horizon" value="48" min="1" max="120"/>
+        </div>
+        <div class="form-group">
+          <label>Number of Simulations</label>
+          <input type="number" id="mc-num-sims" value="3000" min="100" max="20000"/>
+        </div>
+        <div class="form-group">
+          <label>Launch Liquidity (USD) <span style="font-size:10px;text-transform:none;letter-spacing:0;font-weight:400;">TGE pool — L₀ boost for the first ~3 weeks, then decays</span></label>
+          <input type="number" id="mc-launch-liquidity" placeholder="Auto — inferred from tokenomics" min="0" step="10000"/>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;padding:12px 16px;background:rgba(35,90,240,0.08);border:1px solid rgba(35,90,240,0.2);border-radius:12px;font-size:12px;color:var(--text-muted);">
+        <strong style="color:var(--accent2);">Mode: Stress Test (Pre-Listing)</strong> — price is driven by net flow (sell minus exogenous buy flow); market drift is disabled. Buy flow is capped by depth/budget and does not pull price back to p0.
+      </div>
+
+      <div class="form-grid" style="margin-top:14px;">
+        <div class="form-group">
+          <label>Launch Profile</label>
+          <select id="mc-prelaunch-profile">
+            <option value="conservative">Conservative — thin book (0.8% of circ mcap)</option>
+            <option value="balanced" selected>Balanced — standard (1.5% of circ mcap)</option>
+            <option value="aggressive">Aggressive — deep book (2.5% of circ mcap)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Time Granularity</label>
+          <select id="mc-time-granularity">
+            <option value="weekly" selected>Weekly (recommended)</option>
+            <option value="daily">Daily (more detail, slower)</option>
+            <option value="monthly">Monthly (fast)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Random Seed <span style="font-size:10px;text-transform:none;letter-spacing:0;">(blank = random)</span></label>
+          <input type="number" id="mc-random-seed" placeholder="Auto" min="0"/>
+        </div>
+      </div>
+
+      <!-- Buy Pressure Engine -->
+      <div style="margin-top:18px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+          <div>
+            <span style="font-size:13px;font-weight:600;color:var(--text-primary);letter-spacing:0.04em;text-transform:uppercase;">Buy Pressure Engine</span>
+            <span style="font-size:11px;color:var(--text-muted);margin-left:8px;">TGE burst from listings, ongoing buy from project hype level</span>
+          </div>
+        </div>
+
+        <!-- TGE Listings (one-off buy pressure at launch) -->
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <label style="font-size:11px;font-weight:600;color:var(--accent2);text-transform:uppercase;letter-spacing:0.06em;margin:0;">TGE Listings</label>
+            <div style="font-size:10px;color:var(--text-muted);text-align:right;line-height:1.4;">
+              Tier 4: 0k-3k · BingX/HTX: 5k-15k · MEXC/Gate/KuCoin: 20k-30k<br>
+              Binance Alpha: 400k · OKX/Bybit: 600k · Binance: 3M
+            </div>
+          </div>
+          <div class="bp-checks" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));">
+            <label class="bp-check-item"><input type="checkbox" class="bp-exchange-toggle" value="mexc" onchange="calcBuyPressure()"/><span class="bp-check-label">MEXC <em>20k-30k</em></span></label>
+            <label class="bp-check-item"><input type="checkbox" class="bp-exchange-toggle" value="gate" onchange="calcBuyPressure()"/><span class="bp-check-label">Gate <em>20k-30k</em></span></label>
+            <label class="bp-check-item"><input type="checkbox" class="bp-exchange-toggle" value="kucoin" onchange="calcBuyPressure()"/><span class="bp-check-label">KuCoin <em>20k-30k</em></span></label>
+            <label class="bp-check-item"><input type="checkbox" class="bp-exchange-toggle" value="bingx" onchange="calcBuyPressure()"/><span class="bp-check-label">BingX <em>5k-15k</em></span></label>
+            <label class="bp-check-item"><input type="checkbox" class="bp-exchange-toggle" value="htx" onchange="calcBuyPressure()"/><span class="bp-check-label">HTX <em>5k-15k</em></span></label>
+            <label class="bp-check-item"><input type="checkbox" class="bp-exchange-toggle" value="binance_alpha" onchange="calcBuyPressure()"/><span class="bp-check-label">Binance Alpha <em>400k</em></span></label>
+            <label class="bp-check-item"><input type="checkbox" class="bp-exchange-toggle" value="okx" onchange="calcBuyPressure()"/><span class="bp-check-label">OKX <em>600k</em></span></label>
+            <label class="bp-check-item"><input type="checkbox" class="bp-exchange-toggle" value="bybit" onchange="calcBuyPressure()"/><span class="bp-check-label">Bybit <em>600k</em></span></label>
+            <label class="bp-check-item"><input type="checkbox" class="bp-exchange-toggle" value="binance" onchange="calcBuyPressure()"/><span class="bp-check-label">Binance <em>3M</em></span></label>
+          </div>
+          <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <label style="font-size:11px;color:var(--text-muted);margin:0;">Tier 4 exchanges (0k-3k each):</label>
+            <input type="number" id="bp-tier4-count" value="0" min="0" max="200" step="1" oninput="calcBuyPressure()" style="max-width:130px;"/>
+          </div>
+          <div id="bp-exchange-range" style="font-size:10px;color:var(--text-dim);margin-top:6px;">Select exchanges or set Tier 4 count</div>
+        </div>
+
+        <!-- Project Hype Level (ongoing monthly buy pressure) -->
+        <div style="padding:14px 16px;background:rgba(120,70,255,0.06);border:1px solid rgba(120,70,255,0.18);border-radius:12px;margin-bottom:12px;">
+          <label style="font-size:11px;font-weight:600;color:rgb(120,70,255);text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:10px;">
+            Project Hype Level
+            <span style="font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0;font-size:11px;"> — drives ongoing monthly buy pressure</span>
+          </label>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+            <input type="range" id="bp-hype-level" min="1" max="10" value="5" step="1" oninput="calcBuyPressure()"
+              style="flex:1;accent-color:rgb(120,70,255);height:6px;"/>
+            <span id="bp-hype-level-value" style="font-size:22px;font-weight:700;color:rgb(120,70,255);min-width:30px;text-align:center;">5</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-dim);padding:0 2px;margin-bottom:12px;">
+            <span>1 Dead</span><span>3 Low</span><span>5 Medium</span><span>7 High</span><span>10 Extreme</span>
+          </div>
+
+          <!-- Hype modifier checkboxes -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+            <label class="bp-check-item"><input type="checkbox" id="bp-hype-kol" onchange="calcBuyPressure()"/><span class="bp-check-label">KOL / Influencer Support <em>x1.25</em></span></label>
+            <label class="bp-check-item"><input type="checkbox" id="bp-hype-narrative" onchange="calcBuyPressure()"/><span class="bp-check-label">Strong Narrative / Meta <em>x1.20</em></span></label>
+            <label class="bp-check-item"><input type="checkbox" id="bp-hype-team" onchange="calcBuyPressure()"/><span class="bp-check-label">Known Team / Prev Success <em>x1.15</em></span></label>
+            <label class="bp-check-item"><input type="checkbox" id="bp-hype-vc" onchange="calcBuyPressure()"/><span class="bp-check-label">VC / Institutional Backing <em>x1.15</em></span></label>
+          </div>
+          <div id="bp-hype-modifier-display" style="font-size:10px;color:var(--text-dim);margin-top:6px;">Modifier: x1.00</div>
+        </div>
+
+        <!-- Summary panel -->
+        <div style="margin-top:12px;padding:12px 14px;border-radius:10px;background:rgba(35,90,240,0.06);border:1px solid rgba(35,90,240,0.16);display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
+          <div style="display:flex;flex-direction:column;gap:3px;">
+            <span style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">TGE Buy Pressure (one-off)</span>
+            <span id="bp-tge-usd-display" style="font-size:20px;font-weight:700;color:var(--accent2);">$0</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;">
+            <span style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">Ongoing Hype Buy (USD/month)</span>
+            <span id="bp-ongoing-usd-display" style="font-size:20px;font-weight:700;color:var(--accent);">$0</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;">
+            <span style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">Hype Level</span>
+            <span id="bp-hype-level-display" style="font-size:20px;font-weight:700;color:rgb(120,70,255);">5 / 10</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Explicit Buyback Budget -->
+      <div style="margin-top:16px;padding:14px 16px;background:rgba(0,177,255,0.06);border:1px solid rgba(0,177,255,0.18);border-radius:12px;">
+        <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <label style="font-size:11px;font-weight:600;color:var(--accent2);text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:6px;">
+              Buyback Budget
+              <span style="font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0;font-size:11px;"> USD/month, optional</span>
+            </label>
+            <input type="number" id="mc-buyback-usd" placeholder="e.g. 50000" min="0" step="1000"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--text-primary);outline:none;"
+              oninput="updateBuybackDisplay()"/>
+          </div>
+          <div style="flex:1;min-width:180px;padding-top:4px;">
+            <div style="font-size:11px;color:var(--text-muted);line-height:1.6;" id="buyback-info-text">
+              Added on top of ongoing hype buy pressure.<br>
+              Deterministic — no noise between simulations.<br>
+              <span style="color:var(--text-dim);">Converted: USD ÷ price = tokens/step</span>
+            </div>
+          </div>
+        </div>
+        <div id="buyback-preview" style="display:none;margin-top:10px;font-size:11px;color:var(--accent2);padding:6px 10px;background:rgba(0,177,255,0.1);border-radius:6px;"></div>
+      </div>
+
+      <!-- Buyback Sink Mode -->
+      <div style="margin-top:12px;padding:12px 16px;background:rgba(0,177,255,0.05);border:1px solid rgba(0,177,255,0.12);border-radius:12px;">
+        <label style="font-size:11px;font-weight:600;color:var(--accent2);text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:8px;">
+          Buyback Sink Mode
+          <span style="font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0;font-size:11px;"> — what happens to bought-back tokens</span>
+        </label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:6px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);">
+            <input type="radio" name="mc-sink-mode" value="none" checked style="accent-color:var(--accent2);"/> Price impact only
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:6px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);">
+            <input type="radio" name="mc-sink-mode" value="burn" style="accent-color:var(--accent2);"/> Burn (permanent float reduction)
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:6px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);">
+            <input type="radio" name="mc-sink-mode" value="treasury" style="accent-color:var(--accent2);"/> Treasury Lock (temporary)
+          </label>
+        </div>
+      </div>
+
+      <!-- Market Layer Calibration (Advanced) -->
+      <details style="margin-top:12px;">
+        <summary style="font-size:11px;font-weight:700;color:var(--text-muted);cursor:pointer;padding:8px 0;user-select:none;letter-spacing:0.04em;text-transform:uppercase;">
+          ⚙ Market Layer (Advanced) — optional, auto-calibrated
+        </summary>
+        <div style="margin-top:10px;padding:14px 16px;background:rgba(0,0,0,0.03);border:1px solid var(--border);border-radius:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+          <div>
+            <label style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:5px;">
+              L₀ — USD per 1% move
+            </label>
+            <input type="number" id="mc-liquidity-l0" min="1000" step="1000"
+              placeholder="Auto"
+              oninput="calcMarketProxy()"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;outline:none;"/>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:4px;">Order book depth for 1% price move</div>
+            <div id="l0-proxy-hint" style="font-size:10px;color:var(--text-muted);margin-top:3px;">No listings — L₀ from profile</div>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:5px;">
+              ADV — Daily Volume USD
+            </label>
+            <input type="number" id="mc-adv-daily" min="0" step="1000"
+              placeholder="Auto"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;outline:none;"/>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:4px;">Average daily trading volume</div>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:5px;">
+              Daily Vol %
+            </label>
+            <input type="number" id="mc-sigma-daily" min="1" max="100" step="0.5"
+              placeholder="Auto"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;outline:none;"/>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:4px;">Daily volatility (log-return σ)</div>
+          </div>
+        </div>
+      </details>
+
+      <!-- hidden fields for backward compat with payload builder -->
+      <input type="hidden" id="mc-sim-mode" value="tokenomics_stress"/>
+      <input type="hidden" id="mc-drift-mode" value="median"/>
+      <input type="hidden" id="mc-buy-pressure-model" value="hype_v2"/>
+      <input type="hidden" id="mc-buy-pressure-score" value="0"/>
+      <input type="hidden" id="mc-marketing-coef-resolved" value="0"/>
+      <input type="hidden" id="mc-tge-buy-pressure-usd" value="0"/>
+      <input type="hidden" id="mc-ongoing-buy-pressure-usd" value="0"/>
+      <!-- Market proxy fields computed from selected exchanges -->
+      <input type="hidden" id="mc-l0-proxy" value=""/>
+      <input type="hidden" id="mc-listing-units" value=""/>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">&#9638;</span> Token Allocations</h2>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
+        Same structure as Sell Pressure tab. Total must equal 100%.
+      </p>
+
+      <div class="preset-row">
+        <span style="font-size:12px;color:var(--text-dim);margin-right:4px;">Presets:</span>
+        <button class="preset-btn" onclick="loadPreset('standard', 'mc')">Standard ICO</button>
+        <button class="preset-btn" onclick="loadPreset('defi', 'mc')">DeFi Protocol</button>
+        <button class="preset-btn" onclick="loadPreset('gaming', 'mc')">GameFi</button>
+        <button class="preset-btn" onclick="loadPreset('clear', 'mc')">Clear All</button>
+      </div>
+
+      <div class="results-table-wrap">
+        <table class="alloc-table" id="mc-alloc-table">
+          <thead>
+            <tr>
+              <th>Category Name</th>
+              <th>Holder Type <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">Holder Type</div><div class="tip-text">Behavior class for this allocation bucket. It drives sell speed and market sensitivity in Monte Carlo. This is now explicit and does not depend on category name.</div></span></span></th>
+              <th>Allocation %</th>
+              <th>TGE Unlock % <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">TGE Unlock</div><div class="tip-text">Percentage of this category's tokens that unlock immediately on launch day (Token Generation Event). 100% = all tokens available on day one. 0% = fully locked until cliff ends.</div></span></span></th>
+              <th>Cliff (months) <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">Cliff Period</div><div class="tip-text">Number of months after TGE before any vesting begins. During the cliff, no new tokens unlock (only TGE unlock is available). After cliff ends, linear vesting starts.</div></span></span></th>
+              <th>Vesting (months) <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">Vesting Period</div><div class="tip-text">Number of months over which remaining tokens unlock linearly after the cliff. Tokens unlock in equal monthly portions. Example: 12 months vesting = ~8.3% of remaining tokens unlock each month.</div></span></span></th>
+              <th>Sell Pressure % <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">Sell Pressure %</div><div class="tip-text">Estimated percentage of unlocked tokens that holders will eventually sell. 0% = no selling (e.g., liquidity pools). 85% = most tokens will be sold. Based on holder type and market conditions.</div></span></span></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="mc-alloc-body"></tbody>
+        </table>
+      </div>
+
+      <div class="alloc-bar-container">
+        <div class="alloc-bar-wrap">
+          <div class="alloc-bar ok" id="mc-alloc-bar" style="width:0%"></div>
+        </div>
+        <div class="alloc-pct ok" id="mc-alloc-pct">0.00%</div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="addAllocRow('mc')">+ Add Category</button>
+        <button class="btn btn-primary" id="mc-run-btn" onclick="runMonteCarlo()">
+          Run Monte Carlo Simulation
+        </button>
+      </div>
+      <div class="error-msg" id="mc-error"></div>
+    </div>
+
+    <!-- MC Results -->
+    <div id="mc-results" style="display:none;">
+      <div class="kpi-grid" id="mc-kpi-grid"></div>
+      <div class="card" id="mc-model-card" style="display:none;">
+        <h2>Model Breakdown</h2>
+        <div id="mc-model-summary" style="font-size:12px;color:var(--text-muted);margin-bottom:10px;"></div>
+        <div class="results-table-wrap">
+          <table class="results-table" id="mc-regime-table">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Monte Carlo Statistics (by Month)</h2>
+        <div class="results-table-wrap" style="max-height:500px;overflow-y:auto;">
+          <table class="results-table" id="mc-results-table">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="chart-grid" id="mc-charts"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Running simulation...</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// Global State
+// ═══════════════════════════════════════════════════════════════════
+
+const PRESETS = {
+  standard: [
+    { name: 'Seed', allocation_pct: 8, tge_unlock_pct: 5, cliff_months: 6, vesting_months: 18, sell_pressure_pct: 85 },
+    { name: 'Private', allocation_pct: 12, tge_unlock_pct: 5, cliff_months: 3, vesting_months: 15, sell_pressure_pct: 80 },
+    { name: 'Public Sale', allocation_pct: 5, tge_unlock_pct: 25, cliff_months: 0, vesting_months: 6, sell_pressure_pct: 70 },
+    { name: 'Team', allocation_pct: 15, tge_unlock_pct: 0, cliff_months: 12, vesting_months: 36, sell_pressure_pct: 10 },
+    { name: 'Advisors', allocation_pct: 5, tge_unlock_pct: 0, cliff_months: 6, vesting_months: 24, sell_pressure_pct: 40 },
+    { name: 'Ecosystem', allocation_pct: 25, tge_unlock_pct: 5, cliff_months: 0, vesting_months: 48, sell_pressure_pct: 30 },
+    { name: 'Marketing', allocation_pct: 10, tge_unlock_pct: 10, cliff_months: 0, vesting_months: 24, sell_pressure_pct: 60 },
+    { name: 'Liquidity', allocation_pct: 10, tge_unlock_pct: 100, cliff_months: 0, vesting_months: 0, sell_pressure_pct: 0 },
+    { name: 'Treasury', allocation_pct: 10, tge_unlock_pct: 0, cliff_months: 6, vesting_months: 36, sell_pressure_pct: 5 },
+  ],
+  defi: [
+    { name: 'Seed', allocation_pct: 5, tge_unlock_pct: 10, cliff_months: 6, vesting_months: 24, sell_pressure_pct: 80 },
+    { name: 'Private', allocation_pct: 10, tge_unlock_pct: 8, cliff_months: 3, vesting_months: 18, sell_pressure_pct: 75 },
+    { name: 'IDO', allocation_pct: 3, tge_unlock_pct: 50, cliff_months: 0, vesting_months: 4, sell_pressure_pct: 70 },
+    { name: 'Team', allocation_pct: 12, tge_unlock_pct: 0, cliff_months: 12, vesting_months: 36, sell_pressure_pct: 10 },
+    { name: 'Advisors', allocation_pct: 3, tge_unlock_pct: 0, cliff_months: 6, vesting_months: 18, sell_pressure_pct: 35 },
+    { name: 'Liquidity Mining', allocation_pct: 30, tge_unlock_pct: 5, cliff_months: 0, vesting_months: 48, sell_pressure_pct: 50 },
+    { name: 'DAO Treasury', allocation_pct: 20, tge_unlock_pct: 0, cliff_months: 3, vesting_months: 48, sell_pressure_pct: 5 },
+    { name: 'Liquidity Pool', allocation_pct: 7, tge_unlock_pct: 100, cliff_months: 0, vesting_months: 0, sell_pressure_pct: 0 },
+    { name: 'Staking Rewards', allocation_pct: 10, tge_unlock_pct: 0, cliff_months: 0, vesting_months: 48, sell_pressure_pct: 25 },
+  ],
+  gaming: [
+    { name: 'Seed', allocation_pct: 6, tge_unlock_pct: 5, cliff_months: 6, vesting_months: 18, sell_pressure_pct: 85 },
+    { name: 'Private', allocation_pct: 10, tge_unlock_pct: 5, cliff_months: 3, vesting_months: 12, sell_pressure_pct: 80 },
+    { name: 'Public', allocation_pct: 4, tge_unlock_pct: 25, cliff_months: 0, vesting_months: 4, sell_pressure_pct: 70 },
+    { name: 'Team', allocation_pct: 15, tge_unlock_pct: 0, cliff_months: 12, vesting_months: 36, sell_pressure_pct: 10 },
+    { name: 'Play-to-Earn', allocation_pct: 30, tge_unlock_pct: 3, cliff_months: 0, vesting_months: 60, sell_pressure_pct: 45 },
+    { name: 'Ecosystem', allocation_pct: 15, tge_unlock_pct: 2, cliff_months: 0, vesting_months: 48, sell_pressure_pct: 25 },
+    { name: 'Marketing', allocation_pct: 8, tge_unlock_pct: 10, cliff_months: 0, vesting_months: 24, sell_pressure_pct: 65 },
+    { name: 'Liquidity', allocation_pct: 7, tge_unlock_pct: 100, cliff_months: 0, vesting_months: 0, sell_pressure_pct: 0 },
+    { name: 'Advisors', allocation_pct: 5, tge_unlock_pct: 0, cliff_months: 6, vesting_months: 18, sell_pressure_pct: 40 },
+  ],
+};
+
+const HOLDER_TYPE_OPTIONS = [
+  { value: 'investor_round', label: 'Investor Round' },
+  { value: 'public_sale', label: 'Public Sale' },
+  { value: 'airdrop', label: 'Airdrop' },
+  { value: 'community', label: 'Community' },
+  { value: 'ecosystem', label: 'Ecosystem' },
+  { value: 'team', label: 'Team' },
+  { value: 'advisors', label: 'Advisors' },
+  { value: 'treasury', label: 'Treasury' },
+  { value: 'project', label: 'Project' },
+  { value: 'kol', label: 'KOL' },
+  { value: 'liquidity', label: 'Liquidity' },
+  { value: 'other', label: 'Other' },
+];
+
+function holderTypeOptionsHTML(selected) {
+  return HOLDER_TYPE_OPTIONS.map(o => `<option value="${o.value}" ${selected === o.value ? 'selected' : ''}>${o.label}</option>`).join('');
+}
+
+function inferPresetHolderType(name) {
+  const n = (name || '').toLowerCase();
+  if (n.includes('seed') || n.includes('private') || n.includes('public') || n.includes('ido') || n.includes('sale')) return 'investor_round';
+  if (n.includes('airdrop')) return 'airdrop';
+  if (n.includes('team')) return 'team';
+  if (n.includes('advisor')) return 'advisors';
+  if (n.includes('treasury') || n.includes('dao')) return 'treasury';
+  if (n.includes('liquidity')) return 'liquidity';
+  if (n.includes('ecosystem') || n.includes('staking') || n.includes('reward') || n.includes('community') || n.includes('mining')) return 'ecosystem';
+  if (n.includes('marketing')) return 'project';
+  if (n.includes('kol')) return 'kol';
+  return 'other';
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Tab Switching
+// ═══════════════════════════════════════════════════════════════════
+
+function switchTab(ev, tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+  if (ev && ev.target) {
+    ev.target.classList.add('active');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Allocation Table Management
+// ═══════════════════════════════════════════════════════════════════
+
+function addAllocRow(prefix, data = null) {
+  const tbody = document.getElementById(prefix + '-alloc-body');
+  const tr = document.createElement('tr');
+  const d = data || { name: '', holder_profile: 'other', allocation_pct: 0, tge_unlock_pct: 0, cliff_months: 0, vesting_months: 12, sell_pressure_pct: 50 };
+  const holderProfile = d.holder_profile || 'other';
+
+  tr.innerHTML = `
+    <td><input type="text" value="${d.name}" placeholder="Category name" data-field="name"/></td>
+    <td><select data-field="holder_profile">${holderTypeOptionsHTML(holderProfile)}</select></td>
+    <td><input type="number" value="${d.allocation_pct}" min="0" max="100" step="0.01" data-field="allocation_pct"/></td>
+    <td><input type="number" value="${d.tge_unlock_pct}" min="0" max="100" step="0.1" data-field="tge_unlock_pct"/></td>
+    <td><input type="number" value="${d.cliff_months}" min="0" max="120" step="1" data-field="cliff_months"/></td>
+    <td><input type="number" value="${d.vesting_months}" min="0" max="120" step="1" data-field="vesting_months"/></td>
+    <td><input type="number" value="${d.sell_pressure_pct}" min="0" max="100" step="1" data-field="sell_pressure_pct"/></td>
+    <td><button class="remove-btn" onclick="this.closest('tr').remove();updateAllocBar('${prefix}');">&times;</button></td>
+  `;
+
+  // Listen for changes to update the bar
+  tr.querySelectorAll('input,select').forEach(inp => {
+    inp.addEventListener('input', () => updateAllocBar(prefix));
+    inp.addEventListener('change', () => updateAllocBar(prefix));
+  });
+
+  tbody.appendChild(tr);
+  updateAllocBar(prefix);
+}
+
+function updateAllocBar(prefix) {
+  const rows = document.querySelectorAll(`#${prefix}-alloc-body tr`);
+  let total = 0;
+  rows.forEach(tr => {
+    const val = parseFloat(tr.querySelector('[data-field="allocation_pct"]').value) || 0;
+    total += val;
+  });
+
+  const bar = document.getElementById(prefix + '-alloc-bar');
+  const pct = document.getElementById(prefix + '-alloc-pct');
+  const w = Math.min(total, 100);
+  bar.style.width = w + '%';
+  pct.textContent = total.toFixed(2) + '%';
+
+  const cls = Math.abs(total - 100) < 0.01 ? 'ok' : (total > 100 ? 'error' : 'warn');
+  bar.className = 'alloc-bar ' + cls;
+  pct.className = 'alloc-pct ' + cls;
+}
+
+function getCategories(prefix) {
+  const rows = document.querySelectorAll(`#${prefix}-alloc-body tr`);
+  const cats = [];
+  rows.forEach(tr => {
+    const name = tr.querySelector('[data-field="name"]').value.trim();
+    const holder_profile = tr.querySelector('[data-field="holder_profile"]').value;
+    const allocation_pct = parseFloat(tr.querySelector('[data-field="allocation_pct"]').value) || 0;
+    const tge_unlock_pct = parseFloat(tr.querySelector('[data-field="tge_unlock_pct"]').value) || 0;
+    const cliff_months = parseInt(tr.querySelector('[data-field="cliff_months"]').value) || 0;
+    const vesting_months = parseInt(tr.querySelector('[data-field="vesting_months"]').value) || 0;
+    const sell_pressure_pct = parseFloat(tr.querySelector('[data-field="sell_pressure_pct"]').value) || 0;
+
+    if (name) {
+      cats.push({ name, holder_profile, allocation_pct, tge_unlock_pct, cliff_months, vesting_months, sell_pressure_pct });
+    }
+  });
+  return cats;
+}
+
+function loadPreset(presetName, prefix = 'sp') {
+  const tbody = document.getElementById(prefix + '-alloc-body');
+  tbody.innerHTML = '';
+  if (presetName === 'clear') {
+    updateAllocBar(prefix);
+    return;
+  }
+  const preset = PRESETS[presetName];
+  if (!preset) return;
+  preset.forEach(d => {
+    const withType = { ...d, holder_profile: d.holder_profile || inferPresetHolderType(d.name) };
+    addAllocRow(prefix, withType);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Toggle Regimes
+// ═══════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════
+// Formatting helpers
+// ═══════════════════════════════════════════════════════════════════
+
+function fmt(n, decimals = 0) {
+  if (n == null || isNaN(n)) return '-';
+  return n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
+
+function fmtUSD(n, decimals = 0) {
+  if (n == null || isNaN(n)) return '-';
+  if (Math.abs(n) >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
+  if (Math.abs(n) >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+  if (Math.abs(n) >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
+  return '$' + n.toFixed(decimals);
+}
+
+function fmtPrice(n) {
+  if (n == null || isNaN(n)) return '-';
+  if (n === 0) return '$0.00';
+  if (n < 0.000001) return '$' + n.toFixed(10);
+  if (n < 0.0001) return '$' + n.toFixed(8);
+  if (n < 0.01) return '$' + n.toFixed(6);
+  if (n < 1) return '$' + n.toFixed(4);
+  if (n < 1000) return '$' + n.toFixed(2);
+  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtPct(n) {
+  if (n == null || isNaN(n)) return '-';
+  return n.toFixed(2) + '%';
+}
+
+function tip(title, text) {
+  return `<span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">${title}</div><div class="tip-text">${text}</div></span></span>`;
+}
+
+function showError(prefix, msg) {
+  const el = document.getElementById(prefix + '-error');
+  el.textContent = msg;
+  el.classList.add('visible');
+  setTimeout(() => el.classList.remove('visible'), 8000);
+}
+
+function networkErrorMessage(endpoint) {
+  if (location.protocol === 'file:') {
+    return `Could not call ${endpoint}. Open the app via http://localhost:8000 (not as file://).`;
+  }
+  return `Could not connect to ${endpoint}. Make sure the server is running: python3 server.py and the page is open at http://localhost:8000.`;
+}
+
+function showLoading(text) {
+  document.getElementById('loading-text').textContent = text;
+  document.getElementById('loading').classList.add('active');
+}
+
+function hideLoading() {
+  document.getElementById('loading').classList.remove('active');
+}
+
+// Plotly glass/light theme
+function makeLayout(opts = {}) {
+  return {
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    plot_bgcolor: 'rgba(35,90,240,0.04)',
+    font: { color: '#081331', family: 'Geologica, -apple-system, sans-serif', size: 12 },
+    margin: { l: 70, r: 30, t: 50, b: 60 },
+    xaxis: { gridcolor: 'rgba(35,90,240,0.14)', linecolor: 'rgba(35,90,240,0.2)', zerolinecolor: 'rgba(35,90,240,0.2)', ...opts.xaxis },
+    yaxis: { gridcolor: 'rgba(35,90,240,0.14)', linecolor: 'rgba(35,90,240,0.2)', zerolinecolor: 'rgba(35,90,240,0.2)', ...opts.yaxis },
+    legend: { bgcolor: 'rgba(255,255,255,0.92)', bordercolor: 'rgba(35,90,240,0.2)', borderwidth: 1, font: { size: 11 }, ...opts.legend },
+    hoverlabel: { bgcolor: 'rgba(255,255,255,0.98)', bordercolor: 'rgba(35,90,240,0.22)', font: { size: 12, color: '#081331' } },
+    height: opts.height || 400,
+    ...opts,
+  };
+}
+
+// Generate tick values/text for month axis
+function monthTicks(horizon) {
+  const step = horizon <= 12 ? 1 : horizon <= 24 ? 2 : horizon <= 48 ? 3 : 6;
+  const vals = [];
+  const texts = [];
+  for (let m = 0; m < horizon; m += step) {
+    vals.push(m);
+    texts.push(m === 0 ? 'TGE' : 'T+' + m + 'M');
+  }
+  return { tickvals: vals, ticktext: texts };
+}
+
+function toLogSafe(arr) {
+  return (arr || []).map(v => (v > 0 ? v : null));
+}
+
+const COLORS = ['#235af0', '#00b1ff', '#1d3fcf', '#4a80ff', '#001348', '#71d4ff', '#3d5ed8', '#0f91e5', '#92b2ff', '#1464f2'];
+const PLOTLY_LAYOUT = makeLayout();
+
+// ═══════════════════════════════════════════════════════════════════
+// Sell Pressure Analysis
+// ═══════════════════════════════════════════════════════════════════
+
+async function runSellPressure() {
+  const cats = getCategories('sp');
+  if (cats.length === 0) { showError('sp', 'Add at least one category.'); return; }
+
+  const total = cats.reduce((s, c) => s + c.allocation_pct, 0);
+  if (Math.abs(total - 100) > 0.01) {
+    showError('sp', `Total allocation must be 100%. Current: ${total.toFixed(2)}%`);
+    return;
+  }
+
+  const payload = {
+    project_name: document.getElementById('sp-project-name').value,
+    total_supply: parseFloat(document.getElementById('sp-total-supply').value),
+    initial_price: parseFloat(document.getElementById('sp-initial-price').value),
+    horizon_months: parseInt(document.getElementById('sp-horizon').value),
+    categories: cats,
+  };
+
+  showLoading('Computing sell pressure...');
+  try {
+    const endpoint = '/api/sell-pressure';
+    const resp = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.detail || 'Server error');
+    }
+    const data = await resp.json();
+    renderSellPressureResults(data, payload);
+  } catch (e) {
+    const msg = (e && e.name === 'TypeError') ? networkErrorMessage('/api/sell-pressure') : (e.message || String(e));
+    showError('sp', msg);
+  } finally {
+    hideLoading();
+  }
+}
+
+function renderSellPressureResults(data, input) {
+  const container = document.getElementById('sp-results');
+  container.style.display = 'block';
+
+  // KPIs
+  const kpiGrid = document.getElementById('sp-kpi-grid');
+  const s = data.summary;
+  const listPriceNote = 'All USD values in this tab use the constant listing price (' + fmtPrice(s.initial_price) + '). For price-reactive analysis, run Monte Carlo.';
+  kpiGrid.innerHTML = `
+    <div style="grid-column:1/-1;background:rgba(35,90,240,0.08);border:1px solid rgba(35,90,240,0.2);border-radius:8px;padding:10px 16px;font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:8px;">
+      <span style="font-size:16px;">&#9432;</span>
+      <span>${listPriceNote}</span>
+    </div>
+    <div class="kpi-card"><div class="kpi-label">TGE Sell Pressure ${tip('TGE Sell Pressure (at listing price)', 'Dollar value of tokens likely to be sold on day one, calculated at constant listing price. Actual USD impact depends on market conditions. Formula: tokens unlocked at TGE &times; sell pressure % &times; listing price. For price-reactive estimates, use Monte Carlo.')}</div><div class="kpi-value red">${fmtUSD(s.tge_pressure_usd)}</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${fmt(s.tge_pressure_tokens)} tokens</div></div>
+    <div class="kpi-card"><div class="kpi-label">TGE Unlock ${tip('TGE Unlock', 'Total tokens unlocked at Token Generation Event (day one). This is the sum of all categories\' allocation &times; their TGE unlock %. Shows how much supply enters the market immediately.')}</div><div class="kpi-value">${fmt(s.tge_unlock_tokens)}</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${fmtPct(s.tge_unlock_tokens / s.total_supply * 100)} of supply</div></div>
+    <div class="kpi-card"><div class="kpi-label">Peak Monthly Pressure ${tip('Peak Monthly Pressure (at listing price)', 'The single highest month of sell pressure. Uses constant listing price — real impact would be lower if price has already dropped. Formula: max month\'s unlock &times; sell pressure % &times; listing price.')}</div><div class="kpi-value red">${fmtUSD(s.peak_monthly_pressure_usd)}</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">at ${s.peak_month_label}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Cumulative Sell Pressure ${tip('Cumulative Sell Pressure (at listing price)', 'Total sell pressure over the entire vesting period at constant listing price. In reality this number would be lower because price typically drops from selling. For dynamic estimates, use Monte Carlo.')}</div><div class="kpi-value amber">${fmtUSD(s.cumulative_sell_pressure_usd)}</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">avg ${fmtUSD(s.avg_monthly_pressure_usd)}/mo</div></div>
+  `;
+
+  // Table
+  const table = document.getElementById('sp-results-table');
+  table.querySelector('thead').innerHTML = `<tr>
+    <th>Month</th><th>Price</th><th>Monthly Unlock</th><th>Cumulative Supply</th>
+    <th>Circ %</th><th>Pressure (tokens)</th><th>Pressure (USD)</th>
+    <th>Cum. Pressure (tokens)</th><th>Cum. Pressure (USD)</th><th>Pressure %</th>
+  </tr>`;
+
+  const tbody = table.querySelector('tbody');
+  const spRows = data.rows.map(r => `<tr>
+      <td>${r.label}</td>
+      <td>${fmtPrice(r.price)}</td>
+      <td>${fmt(r.monthly_unlock)}</td>
+      <td>${fmt(r.cumulative_supply)}</td>
+      <td>${fmtPct(r.circulating_pct)}</td>
+      <td>${fmt(r.pressure_tokens)}</td>
+      <td>${fmtUSD(r.pressure_usd)}</td>
+      <td>${fmt(r.cumulative_pressure_tokens)}</td>
+      <td>${fmtUSD(r.cumulative_pressure_usd)}</td>
+      <td>${fmtPct(r.pressure_pct_of_unlock)}</td>
+    </tr>`);
+  tbody.innerHTML = spRows.join('');
+
+  // Charts
+  const chartGrid = document.getElementById('sp-charts');
+  chartGrid.innerHTML = `
+    <div class="chart-card" id="sp-chart-pressure"></div>
+    <div class="chart-card" id="sp-chart-cumulative"></div>
+    <div class="chart-card full-width" id="sp-chart-vesting"></div>
+    <div class="chart-card" id="sp-chart-breakdown"></div>
+    <div class="chart-card" id="sp-chart-circ"></div>
+  `;
+
+  const monthNums = data.rows.map(r => r.month);
+  const horizon = monthNums.length;
+  const mt = monthTicks(horizon);
+
+  // Monthly sell pressure bar chart
+  Plotly.newPlot('sp-chart-pressure', [{
+    x: monthNums,
+    y: data.rows.map(r => r.pressure_usd),
+    type: 'bar',
+    marker: { color: '#001348', opacity: 0.85 },
+    name: 'Sell Pressure (USD)',
+    hovertemplate: 'T+%{x}M<br>%{y:$,.0f}<extra></extra>',
+  }], makeLayout({
+    title: { text: 'Monthly Sell Pressure (USD)', font: { size: 14 } },
+    xaxis: { title: 'Month', ...mt },
+    yaxis: { title: 'USD' },
+  }), { responsive: true });
+
+  // Cumulative pressure
+  Plotly.newPlot('sp-chart-cumulative', [{
+    x: monthNums,
+    y: data.rows.map(r => r.cumulative_pressure_usd),
+    type: 'scatter',
+    mode: 'lines',
+    line: { color: '#235af0', width: 3 },
+    fill: 'tozeroy',
+    fillcolor: 'rgba(35,90,240,0.16)',
+    name: 'Cumulative Pressure (USD)',
+    hovertemplate: 'T+%{x}M<br>%{y:$,.0f}<extra></extra>',
+  }], makeLayout({
+    title: { text: 'Cumulative Sell Pressure (USD)', font: { size: 14 } },
+    xaxis: { title: 'Month', ...mt },
+    yaxis: { title: 'USD' },
+  }), { responsive: true });
+
+  // Vesting schedule stacked area
+  const catNames = Object.keys(data.category_releases);
+  const vestingTraces = catNames.map((name, i) => ({
+    x: monthNums,
+    y: data.category_releases[name].cumulative,
+    type: 'scatter',
+    mode: 'lines',
+    stackgroup: 'one',
+    name: name,
+    line: { color: COLORS[i % COLORS.length], width: 1 },
+    fillcolor: COLORS[i % COLORS.length] + '80',
+  }));
+  Plotly.newPlot('sp-chart-vesting', vestingTraces, makeLayout({
+    title: { text: 'Cumulative Vesting Schedule', font: { size: 14 } },
+    xaxis: { title: 'Month', ...mt },
+    yaxis: { title: 'Tokens' },
+    height: 450,
+  }), { responsive: true });
+
+  // Breakdown bar chart
+  const breakdownTraces = catNames.map((name, i) => ({
+    x: monthNums,
+    y: data.rows.map(r => r.category_breakdown[name] || 0),
+    type: 'bar',
+    name: name,
+    marker: { color: COLORS[i % COLORS.length] },
+  }));
+  Plotly.newPlot('sp-chart-breakdown', breakdownTraces, makeLayout({
+    barmode: 'stack',
+    title: { text: 'Sell Pressure by Category (tokens)', font: { size: 14 } },
+    xaxis: { title: 'Month', ...mt },
+    yaxis: { title: 'Tokens' },
+  }), { responsive: true });
+
+  // Circulating supply
+  Plotly.newPlot('sp-chart-circ', [{
+    x: monthNums,
+    y: data.rows.map(r => r.circulating_pct),
+    type: 'scatter',
+    mode: 'lines',
+    line: { color: '#00b1ff', width: 3 },
+    fill: 'tozeroy',
+    fillcolor: 'rgba(0,177,255,0.16)',
+    name: 'Circulating %',
+    hovertemplate: 'T+%{x}M<br>%{y:.1f}%<extra></extra>',
+  }], makeLayout({
+    title: { text: 'Circulating Supply %', font: { size: 14 } },
+    xaxis: { title: 'Month', ...mt },
+    yaxis: { title: '%', range: [0, 105] },
+  }), { responsive: true });
+
+  container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Monte Carlo Simulation
+// ═══════════════════════════════════════════════════════════════════
+
+const EXCHANGE_CONFIG = {
+  tier4: { min: 0, max: 3000, usd: 1500, l0: 500, units: 0.08, label: 'Tier 4' },
+  mexc: { min: 20000, max: 30000, usd: 25000, l0: 2200, units: 0.42, label: 'MEXC' },
+  gate: { min: 20000, max: 30000, usd: 25000, l0: 2200, units: 0.42, label: 'Gate' },
+  kucoin: { min: 20000, max: 30000, usd: 25000, l0: 2200, units: 0.42, label: 'KuCoin' },
+  bingx: { min: 5000, max: 15000, usd: 10000, l0: 1200, units: 0.22, label: 'BingX' },
+  htx: { min: 5000, max: 15000, usd: 10000, l0: 1200, units: 0.22, label: 'HTX' },
+  binance_alpha: { min: 400000, max: 400000, usd: 400000, l0: 8000, units: 1.20, label: 'Binance Alpha' },
+  okx: { min: 600000, max: 600000, usd: 600000, l0: 12000, units: 1.60, label: 'OKX' },
+  bybit: { min: 600000, max: 600000, usd: 600000, l0: 12000, units: 1.60, label: 'Bybit' },
+  binance: { min: 3000000, max: 3000000, usd: 3000000, l0: 30000, units: 3.00, label: 'Binance' },
+};
+
+function clampJs(v, lo, hi) {
+  if (!Number.isFinite(v)) return lo;
+  return Math.max(lo, Math.min(hi, v));
+}
+
+function marketingCoefFromBudget(budgetUsd) {
+  const b = Math.max(0, budgetUsd || 0);
+  if (b <= 10_000) return 0.2 * (b / 10_000);
+  if (b <= 300_000) return 0.2 + ((b - 10_000) / 290_000) * 0.45; // 0.20 -> 0.65
+  if (b <= 1_000_000) return 0.65 + ((b - 300_000) / 700_000) * 0.05; // 0.65 -> 0.70
+  return 0.70;
+}
+
+function legacyScoreFromTgeUsd(tgeUsd) {
+  // Backward-compatible score proxy for old analytics fields (0..10).
+  const x = Math.max(tgeUsd || 0, 0);
+  const maxRef = 3_000_000;
+  return clampJs(10 * (Math.log10(1 + x / 3000) / Math.log10(1 + maxRef / 3000)), 0, 10);
+}
+
+function getSelectedExchanges() {
+  return Array.from(document.querySelectorAll('.bp-exchange-toggle:checked'))
+    .map((el) => (el.value || '').trim())
+    .filter((key) => !!EXCHANGE_CONFIG[key] && key !== 'tier4');
+}
+
+function getTier4ExchangeCount() {
+  const raw = parseInt(document.getElementById('bp-tier4-count')?.value, 10);
+  if (!Number.isFinite(raw)) return 0;
+  return Math.max(0, Math.min(200, raw));
+}
+
+function getExchangeAggregate() {
+  const selected = getSelectedExchanges();
+  const tier4Count = getTier4ExchangeCount();
+  let min = 0;
+  let max = 0;
+  let usd = 0;
+  let l0 = 0;
+  let units = 0;
+
+  selected.forEach((key) => {
+    const cfg = EXCHANGE_CONFIG[key];
+    min += cfg.min;
+    max += cfg.max;
+    usd += cfg.usd;
+    l0 += cfg.l0;
+    units += cfg.units;
+  });
+  if (tier4Count > 0) {
+    const cfg = EXCHANGE_CONFIG.tier4;
+    min += cfg.min * tier4Count;
+    max += cfg.max * tier4Count;
+    usd += cfg.usd * tier4Count;
+    l0 += cfg.l0 * tier4Count;
+    units += cfg.units * tier4Count;
+  }
+
+  return {
+    selected,
+    tier4Count,
+    min,
+    max,
+    usd,
+    l0,
+    units,
+    count: selected.length + tier4Count,
+  };
+}
+
+function exchangeSelectionLabel(agg) {
+  const parts = agg.selected.map((key) => EXCHANGE_CONFIG[key].label);
+  if (agg.tier4Count > 0) parts.push(`Tier 4 x${agg.tier4Count}`);
+  return parts.join(', ');
+}
+
+function calcMarketProxy() {
+  const agg = getExchangeAggregate();
+  const tgeUsd = Math.max(parseFloat(document.getElementById('mc-tge-buy-pressure-usd')?.value) || 0, 0);
+
+  const l0FromExchanges = agg.l0;
+  const l0Raw = Math.max(l0FromExchanges, tgeUsd / 120.0);
+  const listingUnits = agg.units;
+
+  const explicitL0 = (document.getElementById('mc-liquidity-l0')?.value || '').trim();
+  document.getElementById('mc-l0-proxy').value = l0Raw > 0 ? Math.round(l0Raw) : '';
+  document.getElementById('mc-listing-units').value = listingUnits > 0 ? listingUnits.toFixed(3) : '';
+
+  const proxyHint = document.getElementById('l0-proxy-hint');
+  if (proxyHint) {
+    if (explicitL0) {
+      proxyHint.textContent = 'Manual override active';
+      proxyHint.style.color = 'var(--accent2)';
+    } else if (agg.count > 0 && l0Raw > 0) {
+      proxyHint.textContent = `Auto from selected exchanges (${agg.count}): L₀ ≈ $${Math.round(l0Raw).toLocaleString()}`;
+      proxyHint.style.color = 'var(--accent-green)';
+    } else if (l0Raw > 0) {
+      proxyHint.textContent = `Auto from buy pressure: L₀ ≈ $${Math.round(l0Raw).toLocaleString()}`;
+      proxyHint.style.color = 'var(--accent-green)';
+    } else {
+      proxyHint.textContent = 'No listings — L₀ from profile';
+      proxyHint.style.color = 'var(--text-muted)';
+    }
+  }
+}
+
+// Hype level → monthly fraction of circulating mcap
+const HYPE_BASE_FRACTIONS = {
+  1: 0.0005, 2: 0.0015, 3: 0.0035, 4: 0.0070, 5: 0.0120,
+  6: 0.0200, 7: 0.0350, 8: 0.0550, 9: 0.0850, 10: 0.1300,
+};
+const HYPE_CHECKBOX_MULTS = { kol: 1.25, narrative: 1.20, team: 1.15, vc: 1.15 };
+
+function getHypeCheckboxMultiplier() {
+  let mult = 1.0;
+  if (document.getElementById('bp-hype-kol')?.checked) mult *= HYPE_CHECKBOX_MULTS.kol;
+  if (document.getElementById('bp-hype-narrative')?.checked) mult *= HYPE_CHECKBOX_MULTS.narrative;
+  if (document.getElementById('bp-hype-team')?.checked) mult *= HYPE_CHECKBOX_MULTS.team;
+  if (document.getElementById('bp-hype-vc')?.checked) mult *= HYPE_CHECKBOX_MULTS.vc;
+  return mult;
+}
+
+function getInitialCircMcap() {
+  const totalSupply = parseFloat(document.getElementById('mc-total-supply')?.value) || 0;
+  const price = parseFloat(document.getElementById('mc-initial-price')?.value) || 0;
+  const cats = getCategories('mc');
+  let circTokens = 0;
+  cats.forEach(c => {
+    circTokens += totalSupply * (c.allocation_pct / 100) * (c.tge_unlock_pct / 100);
+  });
+  if (circTokens <= 0) circTokens = totalSupply * 0.005;
+  return Math.max(circTokens * price, 0);
+}
+
+function calcBuyPressure() {
+  const agg = getExchangeAggregate();
+
+  // TGE = raw exchange aggregate USD (no multiplier, no marketing)
+  const tgeBuyPressureUsd = Math.max(agg.usd, 0);
+
+  // Ongoing = hype_base_fraction[level] × initial_circ_mcap × checkbox_mult
+  const hypeLevel = clampJs(parseInt(document.getElementById('bp-hype-level')?.value, 10), 1, 10);
+  const baseFrac = HYPE_BASE_FRACTIONS[hypeLevel] || HYPE_BASE_FRACTIONS[5];
+  const checkboxMult = getHypeCheckboxMultiplier();
+  const initialCircMcap = getInitialCircMcap();
+  const ongoingHypeMonthlyUsd = Math.max(initialCircMcap * baseFrac * checkboxMult, 0);
+
+  // Update hype level display
+  const hypeValueEl = document.getElementById('bp-hype-level-value');
+  if (hypeValueEl) hypeValueEl.textContent = hypeLevel;
+  const hypeLevelDisplay = document.getElementById('bp-hype-level-display');
+  if (hypeLevelDisplay) hypeLevelDisplay.textContent = `${hypeLevel} / 10`;
+  const modDisplay = document.getElementById('bp-hype-modifier-display');
+  if (modDisplay) modDisplay.textContent = `Modifier: x${checkboxMult.toFixed(2)} | Circ Mcap: ${fmtUSD(initialCircMcap)} | Base: ${(baseFrac * 100).toFixed(2)}%/mo`;
+
+  // Exchange range text
+  let rangeText = '';
+  if (agg.count > 0) {
+    rangeText = `Selected: ${agg.count} listing(s) | TGE range ${fmtUSD(agg.min)} - ${fmtUSD(agg.max)} (midpoint ${fmtUSD(agg.usd)})`;
+    const labels = exchangeSelectionLabel(agg);
+    if (labels) rangeText += ` | ${labels}`;
+  } else {
+    rangeText = 'No listings selected — TGE buy pressure = $0';
+  }
+  const exchangeRangeEl = document.getElementById('bp-exchange-range');
+  if (exchangeRangeEl) exchangeRangeEl.textContent = rangeText;
+
+  // Summary panel
+  const legacyScore = legacyScoreFromTgeUsd(tgeBuyPressureUsd);
+  document.getElementById('bp-tge-usd-display').textContent = fmtUSD(tgeBuyPressureUsd);
+  document.getElementById('bp-ongoing-usd-display').textContent = fmtUSD(ongoingHypeMonthlyUsd);
+
+  // Hidden fields for payload
+  document.getElementById('mc-buy-pressure-score').value = legacyScore.toFixed(2);
+  document.getElementById('mc-marketing-coef-resolved').value = '0';
+  document.getElementById('mc-tge-buy-pressure-usd').value = tgeBuyPressureUsd.toFixed(2);
+  document.getElementById('mc-ongoing-buy-pressure-usd').value = ongoingHypeMonthlyUsd.toFixed(2);
+
+  calcMarketProxy();
+  updateBuybackDisplay();
+}
+
+function updateBuybackDisplay() {
+  const manualBuyback = Math.max(parseFloat(document.getElementById('mc-buyback-usd').value) || 0, 0);
+  const ongoingHype = Math.max(parseFloat(document.getElementById('mc-ongoing-buy-pressure-usd').value) || 0, 0);
+  const preview = document.getElementById('buyback-preview');
+  if (manualBuyback <= 0 && ongoingHype <= 0) {
+    preview.style.display = 'none';
+    return;
+  }
+
+  const gran = document.getElementById('mc-time-granularity').value;
+  const stepsPerMonth = gran === 'daily' ? 30 : gran === 'weekly' ? 4 : 1;
+  const granLabel = gran === 'daily' ? 'day' : gran === 'weekly' ? 'week' : 'month';
+
+  const totalMonthly = manualBuyback + ongoingHype;
+  const totalPerStep = totalMonthly / stepsPerMonth;
+  preview.style.display = 'block';
+  preview.textContent = `manual buyback: ${fmtUSD(manualBuyback)}/mo + ongoing hype: ${fmtUSD(ongoingHype)}/mo = ${fmtUSD(totalMonthly)}/mo (≈ ${fmtUSD(totalPerStep)} / ${granLabel})`;
+}
+
+async function runMonteCarlo() {
+  calcBuyPressure();
+
+  const cats = getCategories('mc');
+  if (cats.length === 0) { showError('mc', 'Add at least one category.'); return; }
+
+  const total = cats.reduce((s, c) => s + c.allocation_pct, 0);
+  if (Math.abs(total - 100) > 0.01) {
+    showError('mc', `Total allocation must be 100%. Currently: ${total.toFixed(2)}%`);
+    return;
+  }
+
+  const payload = {
+    project_name: document.getElementById('mc-project-name').value,
+    total_supply: parseFloat(document.getElementById('mc-total-supply').value),
+    initial_price: parseFloat(document.getElementById('mc-initial-price').value),
+    horizon_months: parseInt(document.getElementById('mc-horizon').value),
+    num_simulations: parseInt(document.getElementById('mc-num-sims').value),
+    annual_volatility: 0,
+    annual_drift: 0,
+    simulation_mode: 'tokenomics_stress',
+    time_granularity: document.getElementById('mc-time-granularity').value,
+    project_stage: 'prelaunch',
+    prelaunch_profile: document.getElementById('mc-prelaunch-profile').value,
+    use_regimes: false,
+    buy_pressure_model: 'hype_v2',
+    buy_pressure_score: parseFloat(document.getElementById('mc-buy-pressure-score').value) || 0,
+    exchange_tier: 'tier4',
+    selected_exchanges: getSelectedExchanges(),
+    tier4_exchange_count: getTier4ExchangeCount(),
+    hype_level: parseInt(document.getElementById('bp-hype-level').value, 10) || 5,
+    hype_kol: !!document.getElementById('bp-hype-kol')?.checked,
+    hype_narrative: !!document.getElementById('bp-hype-narrative')?.checked,
+    hype_team: !!document.getElementById('bp-hype-team')?.checked,
+    hype_vc: !!document.getElementById('bp-hype-vc')?.checked,
+    tge_buy_pressure_usd: parseFloat(document.getElementById('mc-tge-buy-pressure-usd').value) || 0,
+    ongoing_buy_pressure_monthly_usd: parseFloat(document.getElementById('mc-ongoing-buy-pressure-usd').value) || 0,
+    categories: cats,
+  };
+
+  const buybackVal = document.getElementById('mc-buyback-usd').value.trim();
+  if (buybackVal !== '' && parseFloat(buybackVal) > 0) {
+    payload.buyback_usd_per_month = parseFloat(buybackVal);
+  }
+
+  // Buyback sink mode (radio)
+  const sinkModeEl = document.querySelector('input[name="mc-sink-mode"]:checked');
+  if (sinkModeEl) {
+    payload.buyback_sink_mode = sinkModeEl.value;
+  }
+
+  const launchLiqVal = document.getElementById('mc-launch-liquidity').value.trim();
+  if (launchLiqVal !== '' && parseFloat(launchLiqVal) > 0) {
+    payload.launch_liquidity_usd = parseFloat(launchLiqVal);
+  }
+
+  // Market Layer overrides (advanced)
+  const l0Val = document.getElementById('mc-liquidity-l0').value.trim();
+  if (l0Val !== '' && parseFloat(l0Val) > 0) {
+    payload.liquidity_usd_per_1pct = parseFloat(l0Val);
+  }
+  const advVal = document.getElementById('mc-adv-daily').value.trim();
+  if (advVal !== '' && parseFloat(advVal) > 0) {
+    payload.adv_daily_usd = parseFloat(advVal);
+  }
+  const sigmaVal = document.getElementById('mc-sigma-daily').value.trim();
+  if (sigmaVal !== '' && parseFloat(sigmaVal) > 0) {
+    payload.sigma_daily = parseFloat(sigmaVal) / 100;  // convert % → fraction
+  }
+
+  const seedVal = document.getElementById('mc-random-seed').value.trim();
+  if (seedVal !== '') {
+    payload.random_seed = parseInt(seedVal);
+  }
+
+  // Market proxy from selected exchanges (only if no explicit L0 override is set)
+  const l0ProxyVal = document.getElementById('mc-l0-proxy').value;
+  if (l0ProxyVal && !payload.liquidity_usd_per_1pct) {
+    payload.l0_proxy_usd = parseFloat(l0ProxyVal);
+  }
+  const listingUnitsVal = document.getElementById('mc-listing-units').value;
+  if (listingUnitsVal && parseFloat(listingUnitsVal) > 0) {
+    payload.listing_units = parseFloat(listingUnitsVal);
+  }
+
+  showLoading(`Running ${payload.num_simulations.toLocaleString()} simulations...`);
+  try {
+    const endpoint = '/api/monte-carlo';
+    const resp = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.detail || 'Server error');
+    }
+    const data = await resp.json();
+    renderMonteCarloResults(data, payload);
+  } catch (e) {
+    const msg = (e && e.name === 'TypeError') ? networkErrorMessage('/api/monte-carlo') : (e.message || String(e));
+    showError('mc', msg);
+  } finally {
+    hideLoading();
+  }
+}
+
+function renderMonteCarloResults(data, input) {
+  const container = document.getElementById('mc-results');
+  container.style.display = 'block';
+
+  // Remove previous config summary bar if any
+  const oldBar = container.querySelector('.config-summary-bar');
+  if (oldBar) oldBar.remove();
+
+  // KPIs
+  const kpiGrid = document.getElementById('mc-kpi-grid');
+  const s = data.summary;
+  const mi = data.model_info || {};
+  const granLabel = s.time_granularity_used || input.time_granularity || 'weekly';
+  const profileLabel = { conservative: 'Conservative', balanced: 'Balanced', aggressive: 'Aggressive' }[mi.prelaunch_profile || 'balanced'] || 'Balanced';
+  const buyModel = (mi.buy_pressure_model || s.buy_pressure_model || 'score_v1');
+  const exchangeLabels = {
+    none: 'None',
+    tier4: 'Tier 4',
+    bingx_htx: 'BingX / HTX',
+    mexc_gate_kucoin: 'MEXC / Gate / KuCoin',
+    binance_alpha: 'Binance Alpha',
+    okx_bybit: 'OKX / Bybit',
+    mexc: 'MEXC',
+    gate: 'Gate',
+    kucoin: 'KuCoin',
+    bingx: 'BingX',
+    htx: 'HTX',
+    okx: 'OKX',
+    bybit: 'Bybit',
+    binance: 'Binance',
+  };
+  const selectedExchanges = Array.isArray(mi.selected_exchanges)
+    ? mi.selected_exchanges
+    : (Array.isArray(input.selected_exchanges) ? input.selected_exchanges : []);
+  const tier4Count = Number(mi.tier4_exchange_count ?? input.tier4_exchange_count ?? 0);
+  const selectedExchangeLabels = selectedExchanges.map((key) => exchangeLabels[key] || key);
+  if (tier4Count > 0) selectedExchangeLabels.push(`Tier 4 x${tier4Count}`);
+  const exchangeTierRaw = mi.exchange_tier || input.exchange_tier || '';
+  const exchangeTierLabel = exchangeLabels[exchangeTierRaw] || exchangeTierRaw;
+  const exchangeSummary = selectedExchangeLabels.length > 0 ? selectedExchangeLabels.join(', ') : exchangeTierLabel;
+  const exchangeRangeMinUsd = Number(mi.exchange_range_min_usd || 0);
+  const exchangeRangeMaxUsd = Number(mi.exchange_range_max_usd || 0);
+  const tgeBuyBurst = Number(mi.tge_buy_pressure_usd ?? s.tge_buy_pressure_usd ?? input.tge_buy_pressure_usd ?? 0);
+  const ongoingHypeBuyMonthly = Number(mi.ongoing_buy_pressure_monthly_usd ?? s.ongoing_buy_pressure_monthly_usd ?? input.ongoing_buy_pressure_monthly_usd ?? 0);
+  const hypeMultiplier = Number(mi.hype_multiplier ?? input.hype_multiplier ?? 1);
+  const marketingCoef = Number(mi.marketing_coef ?? input.marketing_coef ?? 0);
+
+  // Config summary bar
+  const configBar = document.createElement('div');
+  configBar.className = 'config-summary-bar';
+  configBar.innerHTML = `
+    <div class="config-tag"><span class="config-tag-label">Simulations</span><span class="config-tag-value">${fmt(s.num_simulations)}</span></div>
+    <div class="config-tag-sep"></div>
+    <div class="config-tag"><span class="config-tag-label">Horizon</span><span class="config-tag-value">${s.horizon_months} mo</span></div>
+    <div class="config-tag-sep"></div>
+    <div class="config-tag"><span class="config-tag-label">Granularity</span><span class="config-tag-value">${granLabel}</span></div>
+    <div class="config-tag-sep"></div>
+    <div class="config-tag"><span class="config-tag-label">Launch Profile</span><span class="config-tag-value">${profileLabel}</span></div>
+    ${mi.inferred_initial_circulating_mcap_usd ? '<div class="config-tag-sep"></div><div class="config-tag"><span class="config-tag-label">TGE Circ MCap</span><span class="config-tag-value">' + fmtUSD(mi.inferred_initial_circulating_mcap_usd) + '</span></div>' : ''}
+    ${mi.market_L0_usd ? '<div class="config-tag-sep"></div><div class="config-tag"><span class="config-tag-label">L₀ (USD/1%)</span><span class="config-tag-value">' + fmtUSD(mi.market_L0_usd) + '</span></div>' : ''}
+    ${mi.launch_liquidity_tge_boost > 0 ? '<div class="config-tag-sep"></div><div class="config-tag"><span class="config-tag-label">TGE L₀ boost</span><span class="config-tag-value" style="color:var(--accent-green)">' + fmtUSD(mi.launch_liquidity_tge_boost) + ' → decay</span></div>' : ''}
+    ${mi.market_sigma_daily_pct ? '<div class="config-tag-sep"></div><div class="config-tag"><span class="config-tag-label">σ daily</span><span class="config-tag-value">' + mi.market_sigma_daily_pct.toFixed(1) + '%</span></div>' : ''}
+    ${mi.buyback_sink_mode && mi.buyback_sink_mode !== 'none' ? '<div class="config-tag-sep"></div><div class="config-tag"><span class="config-tag-label">Sink</span><span class="config-tag-value" style="color:var(--accent2)">' + mi.buyback_sink_mode + '</span></div>' : ''}
+    ${buyModel === 'tge_hype_v1'
+      ? '<div class="config-tag-sep"></div><div class="config-tag"><span class="config-tag-label">Buy Model</span><span class="config-tag-value">TGE + Hype</span></div>'
+        + (exchangeSummary ? '<div class="config-tag-sep"></div><div class="config-tag"><span class="config-tag-label">Exchanges</span><span class="config-tag-value">' + exchangeSummary + '</span></div>' : '')
+        + ((exchangeRangeMinUsd > 0 || exchangeRangeMaxUsd > 0) ? '<div class="config-tag-sep"></div><div class="config-tag"><span class="config-tag-label">Exchange Range</span><span class="config-tag-value">' + fmtUSD(exchangeRangeMinUsd) + ' - ' + fmtUSD(exchangeRangeMaxUsd) + '</span></div>' : '')
+        + '<div class="config-tag-sep"></div><div class="config-tag"><span class="config-tag-label">TGE Buy Burst</span><span class="config-tag-value" style="color:var(--accent-green)">' + fmtUSD(tgeBuyBurst) + '</span></div>'
+        + '<div class="config-tag-sep"></div><div class="config-tag"><span class="config-tag-label">Ongoing Hype</span><span class="config-tag-value">' + fmtUSD(ongoingHypeBuyMonthly) + '/mo</span></div>'
+        + '<div class="config-tag-sep"></div><div class="config-tag"><span class="config-tag-label">Hype Mult</span><span class="config-tag-value">' + hypeMultiplier.toFixed(2) + 'x</span></div>'
+        + '<div class="config-tag-sep"></div><div class="config-tag"><span class="config-tag-label">Marketing Coef</span><span class="config-tag-value">' + marketingCoef.toFixed(2) + '</span></div>'
+      : '<div class="config-tag-sep"></div><div class="config-tag"><span class="config-tag-label">Buy Pressure</span><span class="config-tag-value" style="color:' + ((mi.buy_pressure_score||0)===0?'var(--text-muted)':(mi.buy_pressure_score||0)<=3?'var(--accent-amber)':(mi.buy_pressure_score||0)<=6?'var(--accent2)':'var(--accent-green)') + '">' + (mi.buy_pressure_score||0).toFixed(1) + '/10</span></div>'
+    }
+    ${mi.buy_usd_cap_step_base ? '<div class="config-tag-sep"></div><div class="config-tag"><span class="config-tag-label">Buy Cap / Step</span><span class="config-tag-value">' + fmtUSD(mi.buy_usd_cap_step_base) + '</span></div>' : ''}
+    ${mi.buyback_usd_per_month ? '<div class="config-tag-sep"></div><div class="config-tag"><span class="config-tag-label">Buyback</span><span class="config-tag-value" style="color:var(--accent2)">' + fmtUSD(mi.buyback_usd_per_month) + '/mo</span></div>' : ''}
+    <div class="config-tag-sep"></div>
+    <div class="config-tag"><span class="config-tag-label">Seed</span><span class="config-tag-value">${s.random_seed_used != null ? s.random_seed_used : 'auto'}</span></div>
+  `;
+  kpiGrid.parentNode.insertBefore(configBar, kpiGrid);
+
+  // Price change % for color
+  const priceChangePct = s.price_change_median_pct || 0;
+  const priceChangeColor = priceChangePct > 0 ? 'green' : (priceChangePct < -30 ? 'red' : 'amber');
+  const priceChangeSign = priceChangePct > 0 ? '+' : '';
+
+  // Worst case drawdown (P5)
+  const worstDrawdown = s.p05_max_drawdown || s.median_max_drawdown;
+
+  // Survival probability = 1 - P(drawdown > 80%)
+  const survivalPct = ((1 - (s.prob_drawdown_80pct || 0)) * 100);
+  const survivalColor = survivalPct > 90 ? 'green' : (survivalPct > 70 ? 'amber' : 'red');
+  const deltaVsBasePct = s.delta_end_price_vs_baseline_pct || 0;
+  const deltaVsBaseColor = deltaVsBasePct > 0 ? 'green' : (deltaVsBasePct < -5 ? 'red' : 'amber');
+  const deltaVsBaseSign = deltaVsBasePct > 0 ? '+' : '';
+  const deltaVsBaseAbs = s.delta_end_price_vs_baseline || 0;
+  const deltaVsBaseAbsSign = deltaVsBaseAbs > 0 ? '+' : (deltaVsBaseAbs < 0 ? '-' : '');
+  const absorptionPct = ((mi.impact_free_absorption || 0) * 100);
+  const peakLoadBreachPct = ((s.prob_peak_load_gt_threshold ?? s.prob_peak_net_load_gt_threshold ?? 0) * 100);
+  const peakLoadBreachColor = peakLoadBreachPct > 70 ? 'red' : (peakLoadBreachPct > 35 ? 'amber' : 'green');
+  const buySupport = s.median_total_buy_support_usd || 0;
+  const plannedBuySupport = s.planned_total_buy_support_usd || 0;
+  const buySupportExecPct = plannedBuySupport > 0 ? (buySupport / plannedBuySupport) * 100 : null;
+  const buyEfficiencyPctPer1M = buySupport > 0 ? ((s.delta_end_price_vs_baseline_pct || 0) / (buySupport / 1_000_000)) : null;
+  const cumulativePressureTokens = s.median_total_pressure_tokens || 0;
+  const cumulativePressureUsdListing = s.median_total_pressure_usd_at_listing || 0;
+  const baselineCollapseShare = s.baseline_collapse_share || 0;
+  const baselinePctMethod = s.delta_end_price_vs_baseline_pct_method || 'symmetric';
+  const baselineDetail = baselineCollapseShare > 0.2
+    ? `baseline near zero in ${(baselineCollapseShare * 100).toFixed(1)}% paths (${baselinePctMethod})`
+    : `${deltaVsBaseAbsSign}${fmtPrice(Math.abs(deltaVsBaseAbs))} vs no-buy baseline`;
+
+  kpiGrid.innerHTML = `
+    <div class="kpi-card"><div class="kpi-label">Median Price Change ${tip('Median Price Change', 'The typical price change from listing to end of horizon across all simulations. Uses the median (50th percentile) &mdash; half the simulations did better, half did worse. Calculated as: (median end price &minus; initial price) / initial price &times; 100%.')}</div><div class="kpi-value ${priceChangeColor}">${priceChangeSign}${priceChangePct.toFixed(1)}%</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${fmtPrice(s.median_end_price)} end price</div></div>
+    <div class="kpi-card"><div class="kpi-label">Price Range at End ${tip('Price Range at End (P5-P95)', '90% of all simulated price outcomes fall within this range at the end of the horizon. P5 = 5th percentile (pessimistic), P95 = 95th percentile (optimistic). A wider range means more uncertainty about the final price.')}</div><div class="kpi-value" style="font-size:18px;">${fmtPrice(s.p05_end_price)} - ${fmtPrice(s.p95_end_price)}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Net-Load Breach Risk ${tip('Net-Load Breach Risk', 'Probability that monthly peak net load (sell minus buy support) exceeds the impact-free absorption threshold. This is a direct microstructure stress signal in the current model.')}</div><div class="kpi-value ${peakLoadBreachColor}">${peakLoadBreachPct.toFixed(1)}%</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">threshold: ${absorptionPct.toFixed(2)}% of circulating</div></div>
+    <div class="kpi-card"><div class="kpi-label">Worst Case Drawdown ${tip('Worst Case Drawdown (P5)', 'The 5th percentile of maximum drawdowns across all simulations &mdash; only 5% of scenarios are worse than this. Drawdown = peak-to-trough price drop as a %. The median drawdown is shown below for comparison. Higher numbers mean bigger potential crashes.')}</div><div class="kpi-value red">${(worstDrawdown * 100).toFixed(1)}%</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">median: ${(s.median_max_drawdown * 100).toFixed(1)}%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Total Sell Pressure ${tip('Total Sell Pressure', 'Primary pressure is shown in tokens. USD at listing keeps price fixed for comparability, while realized USD uses simulated path prices and is lower when price falls.')}</div><div class="kpi-value amber">${fmt(cumulativePressureTokens)} tok</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">listing USD: ${fmtUSD(cumulativePressureUsdListing)} | realized USD: ${fmtUSD(s.median_total_pressure_usd)}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Buy Support Budget ${tip('Buy Support Budget (modeled)', 'Modeled external buy support used to absorb unlock selling. Includes scenario buy engine flow (score or ongoing hype) plus optional manual buyback, all capped by liquidity execution limits.')}</div><div class="kpi-value ${(s.median_total_buy_support_usd || 0) > 0 ? 'green' : 'amber'}">${fmtUSD(s.median_total_buy_support_usd || 0)}</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${buySupportExecPct == null ? (buyEfficiencyPctPer1M == null ? 'efficiency: n/a' : ('efficiency: ' + buyEfficiencyPctPer1M.toFixed(2) + '% end-price per $1M')) : ('executed median: ' + fmtUSD(buySupport) + ' / planned: ' + fmtUSD(plannedBuySupport) + ' (' + buySupportExecPct.toFixed(1) + '%)')}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Peak Impact / Step ${tip('Peak Impact per Step', 'Maximum modeled price impact in a single step (median across all paths). Shows how severe the worst liquidity shock from unlock selling can be.')}</div><div class="kpi-value ${(s.median_peak_impact_step_pct || 0) > 15 ? 'red' : ((s.median_peak_impact_step_pct || 0) > 6 ? 'amber' : 'green')}">${(s.median_peak_impact_step_pct || 0).toFixed(1)}%</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">unlock spike: ${(s.median_peak_unlock_ratio_pct || 0).toFixed(2)}% of circulating</div></div>
+    <div class="kpi-card"><div class="kpi-label">End Price vs Baseline ${tip('End Price vs Baseline (same seeds)', 'Difference in median end price between this scenario and a no-buy baseline, using matched random seeds. If baseline collapses to near-zero, percentage is stabilized to avoid meaningless extreme values.')}</div><div class="kpi-value ${deltaVsBaseColor}">${deltaVsBaseSign}${deltaVsBasePct.toFixed(1)}%</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${baselineDetail}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Token Survival Score ${tip('Token Survival Score', 'Probability that the token avoids drawdown deeper than 80% from peak during horizon. This is a tail-risk stability metric.')}</div><div class="kpi-value ${survivalColor}">${survivalPct.toFixed(0)}%</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">P(drawdown >50%): ${((s.prob_drawdown_50pct || 0) * 100).toFixed(1)}%</div></div>
+  `;
+
+  // Regime breakdown
+  const modelCard = document.getElementById('mc-model-card');
+  const modelSummary = document.getElementById('mc-model-summary');
+  const regimeTable = document.getElementById('mc-regime-table');
+  const regimeSummary = (data.model_info && data.model_info.regime_summary) || {};
+  const regimeNames = Object.keys(regimeSummary);
+  const showRegimeCard = regimeNames.length > 1 || (regimeNames.length === 1 && regimeNames[0] !== 'single');
+  if (showRegimeCard) {
+    modelCard.style.display = 'block';
+    modelSummary.textContent = 'How each market regime contributed to final outcomes.';
+    regimeTable.querySelector('thead').innerHTML = `<tr>
+      <th>Regime</th>
+      <th>Sample Share</th>
+      <th>Median End Price</th>
+      <th>P(Price > Initial)</th>
+    </tr>`;
+    const tbody = regimeTable.querySelector('tbody');
+    const regimeRows = regimeNames.map(name => {
+      const r = regimeSummary[name];
+      return `<tr>
+        <td>${name}</td>
+        <td>${((r.sample_share || 0) * 100).toFixed(1)}%</td>
+        <td>${fmtPrice(r.median_end_price)}</td>
+        <td>${((r.prob_price_above_initial || 0) * 100).toFixed(1)}%</td>
+      </tr>`;
+    });
+    tbody.innerHTML = regimeRows.join('');
+  } else {
+    modelCard.style.display = 'none';
+  }
+
+  // Stats Table
+  const table = document.getElementById('mc-results-table');
+  table.querySelector('thead').innerHTML = `<tr>
+    <th>Month</th>
+    <th>Price P5</th><th>Price P25</th><th>Price Median</th><th>Price P75</th><th>Price P95</th>
+    <th>Pressure P5</th><th>Pressure P25</th><th>Pressure Median</th><th>Pressure P75</th><th>Pressure P95</th>
+    <th>Cum. Pressure Tok P50</th><th>Cum. Pressure USD P50</th><th>Buy Support USD P50</th><th>Sell Load Max P50</th><th>Buy Load Max P50</th><th>Net Load Max P50</th><th>Impact P50</th><th>Unlock Shock P50</th>
+  </tr>`;
+
+  const mcTbody = table.querySelector('tbody');
+  const mcRows = data.monthly_stats.map(r => `<tr>
+      <td>${r.label}</td>
+      <td>${fmtPrice(r.price_p05)}</td><td>${fmtPrice(r.price_p25)}</td>
+      <td>${fmtPrice(r.price_p50)}</td><td>${fmtPrice(r.price_p75)}</td>
+      <td>${fmtPrice(r.price_p95)}</td>
+      <td>${fmtUSD(r.pressure_usd_p05)}</td><td>${fmtUSD(r.pressure_usd_p25)}</td>
+      <td>${fmtUSD(r.pressure_usd_p50)}</td><td>${fmtUSD(r.pressure_usd_p75)}</td>
+      <td>${fmtUSD(r.pressure_usd_p95)}</td>
+      <td>${fmt(r.cumulative_pressure_tokens_p50 || 0)}</td>
+      <td>${fmtUSD(r.cumulative_pressure_p50)}</td>
+      <td>${fmtUSD(r.buy_support_usd_p50 || 0)}</td>
+      <td>${((r.sell_load_ratio_max_p50 ?? r.sell_load_ratio_p50 ?? 0) * 100).toFixed(2)}%</td>
+      <td>${((r.buy_load_ratio_max_p50 ?? r.buy_load_ratio_p50 ?? 0) * 100).toFixed(2)}%</td>
+      <td>${((r.net_load_ratio_max_p50 ?? r.net_load_ratio_p50 ?? 0) * 100).toFixed(2)}%</td>
+      <td>${((r.impact_p50 || 0) * 100).toFixed(2)}%</td>
+      <td>${((r.unlock_ratio_p50 || 0) * 100).toFixed(2)}%</td>
+    </tr>`);
+  mcTbody.innerHTML = mcRows.join('');
+
+  // Agent Behavior Profiles table
+  const agentProfiles = data.agent_profiles || [];
+  const agentCard = document.getElementById('mc-model-card');
+  if (agentProfiles.length > 0) {
+    // Insert agent profiles section before charts
+    let agentHTML = `<div class="card" id="mc-agent-card">
+      <h2>Agent Behavior Profiles</h2>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">Behavior is now driven by explicit holder type you set in the allocation table (not by category name).</div>
+      <div class="results-table-wrap">
+        <table class="results-table">
+          <thead><tr>
+            <th>Category</th><th>Holder Type</th><th>Behavior Class ${tip('Behavior Class', 'Derived archetype used by simulation engine. Investor = faster selling; Emission = medium flow; Slow = long-term holders; Default = neutral.')}</th><th>Terminal Sell % ${tip('Terminal Sell %', 'Maximum percentage of unlocked tokens that holders will eventually sell. For example, 85% means holders will sell at most 85% of their tokens and keep 15% long-term. Based on a Beta distribution around this mean.')}</th><th>Half-Life (days) ${tip('Half-Life', 'How quickly holders sell their tokens after unlock. A half-life of 30 days means ~50% of intended selling happens within 30 days. Shorter = faster selling pressure. Investors have shorter half-lives than team/ecosystem holders.')}</th><th>Momentum Sensitivity ${tip('Momentum Sensitivity', 'How much recent price trends affect selling behavior. Positive values mean holders sell MORE when price is rising (taking profits). Negative would mean selling more when price drops. Zero = no reaction to price momentum.')}</th><th>Drawdown Sensitivity ${tip('Drawdown Sensitivity', 'How much holders panic-sell during price crashes. Higher values mean more aggressive selling when price drops significantly from its peak. Models real human behavior where large drawdowns trigger fear-based selling.')}</th>
+          </tr></thead>
+          <tbody>`;
+    agentProfiles.forEach(p => {
+      const profileColors = { slow: 'var(--accent-green)', emission: 'var(--accent-amber)', investor: 'var(--accent-red)', default: 'var(--accent2)' };
+      const profileLabels = { slow: 'Slow Holder', emission: 'Emission', investor: 'Investor', default: 'Default' };
+      const holderTypeLabels = {
+        investor_round: 'Investor Round',
+        public_sale: 'Public Sale',
+        airdrop: 'Airdrop',
+        community: 'Community',
+        ecosystem: 'Ecosystem',
+        team: 'Team',
+        advisors: 'Advisors',
+        treasury: 'Treasury',
+        project: 'Project',
+        kol: 'KOL',
+        liquidity: 'Liquidity',
+        other: 'Other',
+      };
+      agentHTML += `<tr>
+        <td>${p.name}</td>
+        <td>${holderTypeLabels[p.holder_profile || 'other'] || (p.holder_profile || 'other')}</td>
+        <td><span style="color:${profileColors[p.profile] || 'var(--text)'}">${profileLabels[p.profile] || p.profile}</span></td>
+        <td>${p.terminal_sell_pct}%</td>
+        <td>${p.half_life_days}d</td>
+        <td>${p.momentum_beta > 0 ? '+' : ''}${p.momentum_beta}</td>
+        <td>${p.drawdown_beta}</td>
+      </tr>`;
+    });
+    agentHTML += `</tbody></table></div></div>`;
+
+    // Remove old agent card if exists
+    const oldAgent = document.getElementById('mc-agent-card');
+    if (oldAgent) oldAgent.remove();
+
+    const chartGridEl = document.getElementById('mc-charts');
+    chartGridEl.insertAdjacentHTML('beforebegin', agentHTML);
+  }
+
+  // Charts
+  const chartGrid = document.getElementById('mc-charts');
+  chartGrid.innerHTML = `
+    <div class="chart-card full-width" id="mc-chart-spaghetti-price"></div>
+    <div class="chart-card full-width" id="mc-chart-spaghetti-pressure"></div>
+    <div class="chart-card full-width" id="mc-chart-cumulative-pressure"></div>
+  `;
+
+  // months[0] = TGE (listing price), months[1..horizon] = end of each month.
+  // For price charts: all horizon+1 points.
+  // For pressure charts: only horizon points (month 1..horizon), axis = pMonths.
+  const months = data.months;  // [0, 1, ..., horizon]
+  const pMonths = months.slice(1);  // [1, 2, ..., horizon] — for pressure charts
+  const mt6 = { tickvals: months.filter(m => m % 6 === 0), ticktext: months.filter(m => m % 6 === 0).map(m => m === 0 ? 'TGE' : 'T+' + m + 'M') };
+  const pmt6 = { tickvals: pMonths.filter(m => m % 6 === 0 || m === 1), ticktext: pMonths.filter(m => m % 6 === 0 || m === 1).map(m => 'T+' + m + 'M') };
+
+  // ── Spaghetti Price Plot ──
+  const prq = data.price_quantiles;
+  const spagPriceTraces = data.spaghetti_prices.map((path, i) => ({
+    x: months, y: toLogSafe(path), type: 'scattergl', mode: 'lines',
+    line: { width: 1, color: 'rgba(35,90,240,0.12)' },
+    hoverinfo: 'skip', showlegend: false,
+  }));
+  spagPriceTraces.push(
+    { x: months, y: toLogSafe(prq.p95), type: 'scatter', mode: 'lines', line: { width: 0 }, showlegend: false, hoverinfo: 'skip' },
+    { x: months, y: toLogSafe(prq.p05), type: 'scatter', mode: 'lines', line: { width: 0 }, fill: 'tonexty', fillcolor: 'rgba(35,90,240,0.1)', showlegend: false, hoverinfo: 'skip' },
+    { x: months, y: toLogSafe(prq.p75), type: 'scatter', mode: 'lines', line: { width: 0 }, showlegend: false, hoverinfo: 'skip' },
+    { x: months, y: toLogSafe(prq.p25), type: 'scatter', mode: 'lines', line: { width: 0 }, fill: 'tonexty', fillcolor: 'rgba(35,90,240,0.2)', name: 'P25-P75', hoverinfo: 'skip' },
+    { x: months, y: toLogSafe(prq.p50), type: 'scatter', mode: 'lines', line: { width: 3, color: '#235af0' }, name: 'Median (close)' },
+    ...(data.twap_price_quantiles ? [{ x: months, y: toLogSafe(data.twap_price_quantiles.p50), type: 'scatter', mode: 'lines', line: { width: 2, color: 'rgba(0,177,255,0.65)', dash: 'dot' }, name: 'TWAP P50' }] : []),
+    { x: months, y: months.map(() => input.initial_price), type: 'scatter', mode: 'lines', line: { width: 1, color: '#6d82aa', dash: 'dash' }, name: 'Listing Price' },
+  );
+  Plotly.newPlot('mc-chart-spaghetti-price', spagPriceTraces, {
+    ...PLOTLY_LAYOUT,
+    title: { text: `Price Distribution (${fmt(input.num_simulations)} paths)`, font: { size: 14 } },
+    xaxis: { ...PLOTLY_LAYOUT.xaxis, title: 'Month', ...mt6 },
+    yaxis: { ...PLOTLY_LAYOUT.yaxis, title: 'Price (USD)', type: 'log' },
+    showlegend: true,
+    legend: { ...PLOTLY_LAYOUT.legend, x: 0.01, y: 0.99 },
+    height: 500,
+  }, { responsive: true });
+
+  // ── Spaghetti Sell Pressure Plot (tokens) ──
+  // Pressure data: horizon points (months 1..horizon). Axis = pMonths.
+  const ptq = data.pressure_tokens_quantiles;
+  const spagPressureData = data.spaghetti_pressure_tokens || data.spaghetti_pressure;
+  const spagPressureTraces = spagPressureData.map((path, i) => ({
+    x: pMonths, y: toLogSafe(path), type: 'scattergl', mode: 'lines',
+    line: { width: 1, color: 'rgba(0,19,72,0.14)' },
+    hoverinfo: 'skip', showlegend: false,
+  }));
+  const pqForSpaghetti = ptq || data.pressure_usd_quantiles;
+  spagPressureTraces.push(
+    { x: pMonths, y: toLogSafe(pqForSpaghetti.p95), type: 'scatter', mode: 'lines', line: { width: 0 }, showlegend: false, hoverinfo: 'skip' },
+    { x: pMonths, y: toLogSafe(pqForSpaghetti.p05), type: 'scatter', mode: 'lines', line: { width: 0 }, fill: 'tonexty', fillcolor: 'rgba(0,19,72,0.1)', showlegend: false, hoverinfo: 'skip' },
+    { x: pMonths, y: toLogSafe(pqForSpaghetti.p75), type: 'scatter', mode: 'lines', line: { width: 0 }, showlegend: false, hoverinfo: 'skip' },
+    { x: pMonths, y: toLogSafe(pqForSpaghetti.p25), type: 'scatter', mode: 'lines', line: { width: 0 }, fill: 'tonexty', fillcolor: 'rgba(0,19,72,0.2)', name: 'P25-P75', hoverinfo: 'skip' },
+    { x: pMonths, y: toLogSafe(pqForSpaghetti.p50), type: 'scatter', mode: 'lines', line: { width: 3, color: '#001348' }, name: 'Median' },
+  );
+  Plotly.newPlot('mc-chart-spaghetti-pressure', spagPressureTraces, {
+    ...PLOTLY_LAYOUT,
+    title: { text: `Monthly Sell Pressure - Tokens Sold (${fmt(input.num_simulations)} paths)`, font: { size: 14 } },
+    xaxis: { ...PLOTLY_LAYOUT.xaxis, title: 'Month', ...pmt6 },
+    yaxis: { ...PLOTLY_LAYOUT.yaxis, title: 'Tokens Sold', type: 'log' },
+    showlegend: true,
+    legend: { ...PLOTLY_LAYOUT.legend, x: 0.01, y: 0.99 },
+    height: 500,
+  }, { responsive: true });
+
+  // ── Cumulative Sell Pressure vs Buy Support (USD) ──
+  const cpq = data.cumulative_pressure_quantiles;
+  const cbq = data.cumulative_buy_support_quantiles || { p50: pMonths.map(() => 0) };
+  Plotly.newPlot('mc-chart-cumulative-pressure', [
+    { x: pMonths, y: cpq.p95, name: 'P95', type: 'scatter', mode: 'lines', line: { width: 0 }, showlegend: false },
+    { x: pMonths, y: cpq.p05, name: 'P5-P95', type: 'scatter', mode: 'lines', line: { width: 0 }, fill: 'tonexty', fillcolor: 'rgba(35,90,240,0.14)' },
+    { x: pMonths, y: cpq.p75, name: 'P75', type: 'scatter', mode: 'lines', line: { width: 0 }, showlegend: false },
+    { x: pMonths, y: cpq.p25, name: 'P25-P75', type: 'scatter', mode: 'lines', line: { width: 0 }, fill: 'tonexty', fillcolor: 'rgba(35,90,240,0.24)' },
+    { x: pMonths, y: cpq.p50, name: 'Sell Pressure Median', type: 'scatter', mode: 'lines', line: { color: '#235af0', width: 3 } },
+    { x: pMonths, y: cbq.p50, name: 'Buy Support Median', type: 'scatter', mode: 'lines', line: { color: '#00b1ff', width: 2, dash: 'dot' } },
+  ], {
+    ...PLOTLY_LAYOUT,
+    title: { text: 'Cumulative Sell Pressure vs Buy Support (USD)', font: { size: 14 } },
+    xaxis: { ...PLOTLY_LAYOUT.xaxis, title: 'Month', ...pmt6 },
+    yaxis: { ...PLOTLY_LAYOUT.yaxis, title: 'USD' },
+  }, { responsive: true });
+
+  container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Init
+// ═══════════════════════════════════════════════════════════════════
+
+// Load Standard ICO preset by default
+loadPreset('standard', 'sp');
+loadPreset('standard', 'mc');
+calcBuyPressure();
+updateBuybackDisplay();
+
+// ── Auth helpers ──────────────────────────────────────────────────────────────
+async function handleLogout() {
+  try {
+    await fetch('/auth/logout', { method: 'POST', credentials: 'same-origin' });
+  } catch (_) { /* ignore network errors */ }
+  window.location.href = '/login';
+}
+
+// Intercept any 401 from the API and redirect to login page
+(function patchFetch() {
+  const _origFetch = window.fetch;
+  window.fetch = async function(...args) {
+    const res = await _origFetch(...args);
+    if (res.status === 401) {
+      window.location.href = '/login';
+    }
+    return res;
+  };
+})();
+</script>
+</body>
+</html>
