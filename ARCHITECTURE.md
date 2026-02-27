@@ -47,3 +47,4 @@ tokenomics-app/
 - Schema validation centralized in one place.
 - UI kept separate from backend Python package.
 - Backward compatibility preserved for existing run commands.
+# deployed Sat Feb 28 06:54:41 +07 2026
