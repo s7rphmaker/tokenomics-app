@@ -650,32 +650,7 @@
       border-color: var(--brand-electric);
       color: #fff;
     }
-    .metric-tip .tip-body {
-      display: none;
-      position: absolute;
-      bottom: calc(100% + 8px);
-      left: 50%;
-      transform: translateX(-50%);
-      width: 290px;
-      background: rgba(255, 255, 255, 0.97);
-      border: 1px solid rgba(35, 90, 240, 0.2);
-      border-radius: 12px;
-      padding: 14px 16px;
-      z-index: 9999;
-      box-shadow: 0 18px 34px rgba(6, 17, 53, 0.2);
-      pointer-events: none;
-      backdrop-filter: blur(10px);
-    }
-    .metric-tip:hover .tip-body { display: block; }
-    .metric-tip .tip-body::after {
-      content: "";
-      position: absolute;
-      top: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      border: 6px solid transparent;
-      border-top-color: rgba(255, 255, 255, 0.97);
-    }
+    .metric-tip .tip-body { display: none; }
     .metric-tip .tip-title {
       font-size: 12px;
       font-weight: 700;
@@ -687,28 +662,27 @@
       color: var(--text-secondary);
       line-height: 1.5;
       font-weight: 500;
-      text-transform: none;
-      letter-spacing: 0;
     }
-    th .metric-tip .tip-body {
-      left: 0;
-      transform: none;
+    #global-tooltip {
+      display: none;
+      position: fixed;
+      width: 290px;
+      background: rgba(255, 255, 255, 0.97);
+      border: 1px solid rgba(35, 90, 240, 0.2);
+      border-radius: 12px;
+      padding: 14px 16px;
+      z-index: 99999;
+      box-shadow: 0 18px 34px rgba(6, 17, 53, 0.2);
+      pointer-events: none;
+      backdrop-filter: blur(10px);
     }
-    th .metric-tip .tip-body::after {
-      left: 12px;
-      transform: none;
-    }
-    th:last-child .metric-tip .tip-body,
-    th:nth-last-child(2) .metric-tip .tip-body {
-      left: auto;
-      right: 0;
-      transform: none;
-    }
-    th:last-child .metric-tip .tip-body::after,
-    th:nth-last-child(2) .metric-tip .tip-body::after {
-      left: auto;
-      right: 12px;
-      transform: none;
+    #global-tooltip::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 20px;
+      border: 6px solid transparent;
+      border-top-color: rgba(255, 255, 255, 0.97);
     }
     .alloc-table thead,
     .alloc-table thead tr,
@@ -2402,6 +2376,46 @@ async function handleLogout() {
     }
     return res;
   };
+})();
+</script>
+
+<div id="global-tooltip"></div>
+<script>
+(function() {
+  const tooltip = document.getElementById('global-tooltip');
+
+  document.addEventListener('mouseenter', function(e) {
+    const tip = e.target.closest('.metric-tip');
+    if (!tip) return;
+    const body = tip.querySelector('.tip-body');
+    if (!body) return;
+
+    tooltip.innerHTML = body.innerHTML;
+    tooltip.style.display = 'block';
+
+    const icon = tip.querySelector('.tip-icon');
+    const rect = (icon || tip).getBoundingClientRect();
+    const ttW = 290;
+    const ttH = tooltip.offsetHeight;
+    const margin = 8;
+
+    let left = rect.left + rect.width / 2 - ttW / 2;
+    let top  = rect.top - ttH - margin;
+
+    // keep within viewport horizontally
+    if (left < 8) left = 8;
+    if (left + ttW > window.innerWidth - 8) left = window.innerWidth - ttW - 8;
+
+    // flip below if not enough space above
+    if (top < 8) top = rect.bottom + margin;
+
+    tooltip.style.left = left + 'px';
+    tooltip.style.top  = top + 'px';
+  }, true);
+
+  document.addEventListener('mouseleave', function(e) {
+    if (e.target.closest('.metric-tip')) tooltip.style.display = 'none';
+  }, true);
 })();
 </script>
 </body>
