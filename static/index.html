@@ -661,7 +661,7 @@
       border: 1px solid rgba(35, 90, 240, 0.2);
       border-radius: 12px;
       padding: 14px 16px;
-      z-index: 100;
+      z-index: 9999;
       box-shadow: 0 18px 34px rgba(6, 17, 53, 0.2);
       pointer-events: none;
       backdrop-filter: blur(10px);
@@ -709,6 +709,38 @@
       left: auto;
       right: 12px;
       transform: none;
+    }
+    .alloc-table thead,
+    .alloc-table thead tr,
+    .alloc-table thead th {
+      overflow: visible !important;
+    }
+    .alloc-table th {
+      position: relative;
+    }
+    .alloc-dual {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 130px;
+    }
+    .alloc-dual-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .alloc-dual-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      width: 14px;
+      flex-shrink: 0;
+    }
+    .alloc-dual input {
+      flex: 1;
+      min-width: 0;
     }
     .bp-checks {
       display: flex;
@@ -772,7 +804,6 @@
 <div class="app-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
   <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
     <h1>cicada. tokenomics control center</h1>
-    <span class="badge">Brandbook Edition</span>
   </div>
   <button onclick="handleLogout()" title="Sign out"
     style="background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.25);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;color:#ff4d6d;cursor:pointer;letter-spacing:0.03em;transition:background 0.15s;"
@@ -800,7 +831,7 @@
         </div>
         <div class="form-group">
           <label>Total Supply</label>
-          <input type="number" id="sp-total-supply" value="1000000000" min="1"/>
+          <input type="number" id="sp-total-supply" value="1000000000" min="1" oninput="syncTokenCountsFromSupply('sp')"/>
         </div>
         <div class="form-group">
           <label>Listing Price (USD)</label>
@@ -834,7 +865,7 @@
             <tr>
               <th>Category Name</th>
               <th>Holder Type <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">Holder Type</div><div class="tip-text">Behavior class for this allocation bucket. It drives sell speed and market sensitivity in Monte Carlo. This is now explicit and does not depend on category name.</div></span></span></th>
-              <th>Allocation %</th>
+              <th>Tokens / Allocation % <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">Tokens / Allocation</div><div class="tip-text">Enter either the token count (T) or percentage (%). The other field will auto-calculate based on Total Supply.</div></span></span></th>
               <th>TGE Unlock % <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">TGE Unlock</div><div class="tip-text">Percentage of this category's tokens that unlock immediately on launch day (Token Generation Event). 100% = all tokens available on day one. 0% = fully locked until cliff ends.</div></span></span></th>
               <th>Cliff (months) <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">Cliff Period</div><div class="tip-text">Number of months after TGE before any vesting begins. During the cliff, no new tokens unlock (only TGE unlock is available). After cliff ends, linear vesting starts.</div></span></span></th>
               <th>Vesting (months) <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">Vesting Period</div><div class="tip-text">Number of months over which remaining tokens unlock linearly after the cliff. Tokens unlock in equal monthly portions. Example: 12 months vesting = ~8.3% of remaining tokens unlock each month.</div></span></span></th>
@@ -891,7 +922,7 @@
         </div>
         <div class="form-group">
           <label>Total Supply</label>
-          <input type="number" id="mc-total-supply" value="1000000000" min="1"/>
+          <input type="number" id="mc-total-supply" value="1000000000" min="1" oninput="syncTokenCountsFromSupply('mc')"/>
         </div>
         <div class="form-group">
           <label>Listing Price (USD)</label>
@@ -1129,7 +1160,7 @@
             <tr>
               <th>Category Name</th>
               <th>Holder Type <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">Holder Type</div><div class="tip-text">Behavior class for this allocation bucket. It drives sell speed and market sensitivity in Monte Carlo. This is now explicit and does not depend on category name.</div></span></span></th>
-              <th>Allocation %</th>
+              <th>Tokens / Allocation % <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">Tokens / Allocation</div><div class="tip-text">Enter either the token count (T) or percentage (%). The other field will auto-calculate based on Total Supply.</div></span></span></th>
               <th>TGE Unlock % <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">TGE Unlock</div><div class="tip-text">Percentage of this category's tokens that unlock immediately on launch day (Token Generation Event). 100% = all tokens available on day one. 0% = fully locked until cliff ends.</div></span></span></th>
               <th>Cliff (months) <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">Cliff Period</div><div class="tip-text">Number of months after TGE before any vesting begins. During the cliff, no new tokens unlock (only TGE unlock is available). After cliff ends, linear vesting starts.</div></span></span></th>
               <th>Vesting (months) <span class="metric-tip"><span class="tip-icon">?</span><span class="tip-body"><div class="tip-title">Vesting Period</div><div class="tip-text">Number of months over which remaining tokens unlock linearly after the cliff. Tokens unlock in equal monthly portions. Example: 12 months vesting = ~8.3% of remaining tokens unlock each month.</div></span></span></th>
@@ -1283,16 +1314,34 @@ function switchTab(ev, tabId) {
 // Allocation Table Management
 // ═══════════════════════════════════════════════════════════════════
 
+function getTotalSupply(prefix) {
+  const el = document.getElementById(prefix + '-total-supply');
+  return el ? (parseFloat(el.value) || 1000000000) : 1000000000;
+}
+
 function addAllocRow(prefix, data = null) {
   const tbody = document.getElementById(prefix + '-alloc-body');
   const tr = document.createElement('tr');
   const d = data || { name: '', holder_profile: 'other', allocation_pct: 0, tge_unlock_pct: 0, cliff_months: 0, vesting_months: 12, sell_pressure_pct: 50 };
   const holderProfile = d.holder_profile || 'other';
+  const supply = getTotalSupply(prefix);
+  const tokenCount = d.token_count != null ? d.token_count : Math.round((d.allocation_pct / 100) * supply);
 
   tr.innerHTML = `
     <td><input type="text" value="${d.name}" placeholder="Category name" data-field="name"/></td>
     <td><select data-field="holder_profile">${holderTypeOptionsHTML(holderProfile)}</select></td>
-    <td><input type="number" value="${d.allocation_pct}" min="0" max="100" step="0.01" data-field="allocation_pct"/></td>
+    <td>
+      <div class="alloc-dual">
+        <div class="alloc-dual-row">
+          <span class="alloc-dual-label">T</span>
+          <input type="number" value="${tokenCount}" min="0" step="1" placeholder="tokens" data-field="token_count"/>
+        </div>
+        <div class="alloc-dual-row">
+          <span class="alloc-dual-label">%</span>
+          <input type="number" value="${d.allocation_pct}" min="0" max="100" step="0.01" placeholder="%" data-field="allocation_pct"/>
+        </div>
+      </div>
+    </td>
     <td><input type="number" value="${d.tge_unlock_pct}" min="0" max="100" step="0.1" data-field="tge_unlock_pct"/></td>
     <td><input type="number" value="${d.cliff_months}" min="0" max="120" step="1" data-field="cliff_months"/></td>
     <td><input type="number" value="${d.vesting_months}" min="0" max="120" step="1" data-field="vesting_months"/></td>
@@ -1300,14 +1349,44 @@ function addAllocRow(prefix, data = null) {
     <td><button class="remove-btn" onclick="this.closest('tr').remove();updateAllocBar('${prefix}');">&times;</button></td>
   `;
 
-  // Listen for changes to update the bar
-  tr.querySelectorAll('input,select').forEach(inp => {
-    inp.addEventListener('input', () => updateAllocBar(prefix));
-    inp.addEventListener('change', () => updateAllocBar(prefix));
+  const tokenInp = tr.querySelector('[data-field="token_count"]');
+  const pctInp   = tr.querySelector('[data-field="allocation_pct"]');
+
+  tokenInp.addEventListener('input', () => {
+    const supply = getTotalSupply(prefix);
+    const t = parseFloat(tokenInp.value);
+    if (!isNaN(t) && supply > 0) pctInp.value = ((t / supply) * 100).toFixed(4);
+    updateAllocBar(prefix);
+  });
+
+  pctInp.addEventListener('input', () => {
+    const supply = getTotalSupply(prefix);
+    const p = parseFloat(pctInp.value);
+    if (!isNaN(p) && supply > 0) tokenInp.value = Math.round((p / 100) * supply);
+    updateAllocBar(prefix);
+  });
+
+  tr.querySelectorAll('select,input').forEach(inp => {
+    if (inp !== tokenInp && inp !== pctInp) {
+      inp.addEventListener('input', () => updateAllocBar(prefix));
+      inp.addEventListener('change', () => updateAllocBar(prefix));
+    }
   });
 
   tbody.appendChild(tr);
   updateAllocBar(prefix);
+}
+
+function syncTokenCountsFromSupply(prefix) {
+  const supply = getTotalSupply(prefix);
+  document.querySelectorAll(`#${prefix}-alloc-body tr`).forEach(tr => {
+    const pctInp   = tr.querySelector('[data-field="allocation_pct"]');
+    const tokenInp = tr.querySelector('[data-field="token_count"]');
+    if (pctInp && tokenInp) {
+      const p = parseFloat(pctInp.value);
+      if (!isNaN(p)) tokenInp.value = Math.round((p / 100) * supply);
+    }
+  });
 }
 
 function updateAllocBar(prefix) {
